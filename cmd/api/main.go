@@ -1,28 +1,23 @@
 package main
 
 import (
-	"github.com/6-things-must-to-do/server/internal/router"
-	"github.com/gin-gonic/gin"
+	"context"
+	"github.com/6-things-must-to-do/server/internal"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 )
 
-func RunAPI(address string) error {
-	r := gin.Default()
+var ginLambda * ginadapter.GinLambda
 
-	api := r.Group("/api")
-
-	authGroup := api.Group("/auth")
-	router.InitAuthRouter(authGroup)
-
-	authenticated := api.Group("")
-	{
-		taskGroup := authenticated.Group("/tasks")
-		router.InitTaskRouter(taskGroup)
-
-		socialGroup := authenticated.Group("/social")
-		router.InitSocialRouter(socialGroup)
-
-		userGroup := authenticated.Group("/users")
-		router.InitUserRouter(userGroup)
+func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if ginLambda == nil {
+		ginLambda = ginadapter.New(internal.GetAPI())
 	}
-	return r.Run(address)
+
+	return ginLambda.ProxyWithContext(ctx, req)
+}
+
+func main() {
+	lambda.Start(handler)
 }

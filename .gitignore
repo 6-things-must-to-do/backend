@@ -3,6 +3,10 @@
 # Serverless directories
 .serverless
 
+# node_modules
+
+node_modules
+
 # golang output binary directory
 bin
 

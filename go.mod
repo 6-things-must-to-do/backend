@@ -3,7 +3,10 @@ module github.com/6-things-must-to-do/server
 go 1.15
 
 require (
-	github.com/gin-gonic/gin v1.6.3 // indirect
+	github.com/aws/aws-lambda-go v1.20.0 // indirect
+	github.com/awslabs/aws-lambda-go-api-proxy v0.8.1 // indirect
+	github.com/cespare/reflex v0.3.0 // indirect
+	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
