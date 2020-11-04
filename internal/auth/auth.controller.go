@@ -25,10 +25,11 @@ func (ac *controller) login(c *gin.Context) {
 	err := loginFormValidator(form)
 	if err != nil {
 		shared.FormError(c, err.Error())
+		return
 	}
 
 	param := &getOrCreateUserParam{
-		appId:        id,
+		id:           id,
 		email:        email,
 		provider:     provider,
 		nickname:     nickname,
@@ -40,9 +41,9 @@ func (ac *controller) login(c *gin.Context) {
 		panic(err)
 	}
 
-	token := ac.service.getJwtToken(user.AppID)
+	token := ac.service.getJwtToken(user.PK)
 
-	c.JSON(http.StatusOK , gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
 func newController(service *service) controllerInterface {

@@ -11,10 +11,16 @@ type DB struct {
 	CoreTable dynamo.Table
 }
 
-func InitDB(isLocal bool) *DB {
-	d := new(DB)
+var db *DB
 
-	d.DynamoDB = dynamo.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-2"), Endpoint: aws.String("http://localhost:8000")})
-	d.CoreTable = d.DynamoDB.Table("STMTCore")
-	return d
+func GetDB() *DB {
+	if db != nil {
+		return db
+	}
+
+	db = new(DB)
+
+	db.DynamoDB = dynamo.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-2"), Endpoint: aws.String("http://localhost:8000")})
+	db.CoreTable = db.DynamoDB.Table("STMTCore")
+	return db
 }

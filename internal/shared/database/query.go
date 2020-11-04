@@ -21,7 +21,12 @@ func CreateAppID(provider string, id string) string {
 	return ret
 }
 
-func GetAppIdFromPK(pk string) string {
+func CreateUserPK(uuid string) string {
+	ret := fmt.Sprintf("USER#%s", uuid)
+	return ret
+}
+
+func GetUUIDFromPK(pk string) string {
 	return strings.Split(pk, "#")[1]
 }
 

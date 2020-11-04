@@ -1,4 +1,4 @@
-package auth
+package user
 
 import (
 	"github.com/6-things-must-to-do/server/internal/shared/database"

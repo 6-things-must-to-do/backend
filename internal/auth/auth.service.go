@@ -19,16 +19,17 @@ type service struct {
 }
 
 type getOrCreateUserParam struct {
-	appId string
-	email string
-	provider string
-	nickname string
+	id           string
+	email        string
+	provider     string
+	nickname     string
 	profileImage string
 }
 
 func (s *service) getOrCreateUser(p *getOrCreateUserParam) (*database.Profile, error) {
 	ret := &database.Profile{}
-	err := s.DB.CoreTable.Get("AppID", hashAppId(p.appId)).Index("AppID").Range("SK", dynamo.Equal, database.GetProfileSK(p.email)).One(ret)
+	hashedAppId := hashAppId(database.CreateAppID(p.id, p.provider))
+	err := s.DB.CoreTable.Get("AppID", hashedAppId).Index("AppID").Range("SK", dynamo.Equal, database.GetProfileSK(p.email)).One(ret)
 	if err == nil {
 		return ret, nil
 	}
@@ -40,7 +41,7 @@ func (s *service) getOrCreateUser(p *getOrCreateUserParam) (*database.Profile, e
 
 	ret.Nickname = p.nickname
 	ret.ProfileImage = p.profileImage
-	ret.AppID = database.CreateAppID(p.appId, p.provider)
+	ret.AppID = hashedAppId
 	ret.Provider = p.provider
 	ret.PK = database.GetUserPK(uid)
 	ret.SK = database.GetProfileSK(p.email)
@@ -70,7 +71,7 @@ type JwtClaims struct {
 
 func (s *service) getJwtToken(pk string) string {
 	secret := []byte(configs.GetConfig().SECRET)
-	claims := JwtClaims{PK:pk}
+	claims := JwtClaims{PK: pk}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(secret)
 	if err != nil {
 		panic(err)
@@ -80,5 +81,5 @@ func (s *service) getJwtToken(pk string) string {
 }
 
 func newService(DB *database.DB) *service {
-	return &service{DB:DB}
+	return &service{DB: DB}
 }

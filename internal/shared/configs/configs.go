@@ -4,7 +4,7 @@ import "os"
 
 type DynamoDBConfigs struct {
 	ENDPOINT string
-	REGION string
+	REGION   string
 }
 
 type Config struct {

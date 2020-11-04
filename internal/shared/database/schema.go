@@ -8,11 +8,11 @@ type Key struct {
 }
 
 type Profile struct {
-	Key	// USER#uuid PROFILE#email
-	Provider string // google | apple
-	AppID string // hashedAppId
-	ProfileImage  string // Image URL
-	Nickname string
+	Key                 // USER#uuid PROFILE#email
+	Provider     string // google | apple
+	AppID        string // hashedAppId
+	ProfileImage string // Image URL
+	Nickname     string
 }
 
 type Record struct {
