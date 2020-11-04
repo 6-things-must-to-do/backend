@@ -10,8 +10,7 @@ type taskRouterInterface interface {
 	getDashboardData(c *gin.Context)
 }
 
-type taskRouter struct {}
-
+type taskRouter struct{}
 
 func (r *taskRouter) getTaskDetail(c *gin.Context) {
 	date := c.Query("date")
@@ -28,10 +27,9 @@ func getTaskRouter() taskRouterInterface {
 	return new(taskRouter)
 }
 
-func InitTaskRouter (router *gin.RouterGroup) {
+func InitTaskRouter(router *gin.RouterGroup) {
 	r := getTaskRouter()
 
 	router.GET("", r.getTaskDetail)
 	router.GET("/dashboard/:type", r.getDashboardData)
 }
-

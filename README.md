@@ -25,6 +25,10 @@ Golang serverless backend for STMT Application
 - Remove Friend with appId
 - Remove Account (then, remove all records & tasks & todos & friendlist)
 
+### PUT
+- Complete Todo by task id
+- Complete Task by task id
+
 ## AWS DynamoDB Table
 - PK SK Inverted GSI 
 - Score LSI (Sparse Key)
@@ -32,6 +36,6 @@ Golang serverless backend for STMT Application
 |PK|SK|nickname|profile|todo|score|memo|where|willStart|estimatedMinutes|completedAt|createdAt|
 |:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
 |USER#appId|PROFILE#email|Nickname|imgUrl|-|-|-|-|-|-|-|-|-|-|
-|USER#appId|REC#date|-|-|-|999|-|-|-|-|-|-|
-|TASK#uuid|REC#date|-|-|[]|-|blah|hanyang univ|1604343297363|300|1604343441719|1604343257363|
-|TASK#uuid|REC#date|-|-|[{content, isCompleted}]|-|-|-|-|-|-|1604343277363|
+|USER#appId|REC#appId#date|-|-|-|999|-|-|-|-|-|-|
+|TASK#uuid|REC#appId#date|-|-|[]|-|blah|hanyang univ|1604343297363|300|1604343441719|1604343257363|
+|TASK#uuid|REC#appId#date|-|-|[{content, isCompleted}]|-|-|-|-|-|-|1604343277363|

@@ -13,7 +13,7 @@ type userRouterInterface interface {
 	//
 }
 
-type userRouter struct {}
+type userRouter struct{}
 
 func (r *userRouter) getUser(c *gin.Context) {
 	//

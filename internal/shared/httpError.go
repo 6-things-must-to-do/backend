@@ -5,6 +5,6 @@ import (
 	"net/http"
 )
 
-func RequiredFieldError (c *gin.Context, errString string) {
-	c.JSON(http.StatusNotAcceptable, gin.H{"message": errString})
+func FormError(c *gin.Context, errString string) {
+	c.JSON(http.StatusNotAcceptable, gin.H{"message": "Form has error.", "field": errString})
 }

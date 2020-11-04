@@ -8,7 +8,7 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 )
 
-var ginLambda * ginadapter.GinLambda
+var ginLambda *ginadapter.GinLambda
 
 func handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if ginLambda == nil {

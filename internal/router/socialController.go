@@ -15,7 +15,7 @@ type socialRouterInterface interface {
 	removeFriend(c *gin.Context)
 }
 
-type socialRouter struct {}
+type socialRouter struct{}
 
 func (r *socialRouter) getFriendList(c *gin.Context) {
 	//
@@ -41,7 +41,7 @@ func getSocialRouter() socialRouterInterface {
 	return new(socialRouter)
 }
 
-func InitSocialRouter (router *gin.RouterGroup) {
+func InitSocialRouter(router *gin.RouterGroup) {
 	r := getSocialRouter()
 
 	router.GET("/friends", r.getFriendList)
@@ -50,4 +50,3 @@ func InitSocialRouter (router *gin.RouterGroup) {
 	router.DELETE("/friends/:username", r.addFriend)
 	router.GET("/leaderboard", r.getLeaderboard)
 }
-
