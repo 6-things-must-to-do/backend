@@ -2,8 +2,10 @@ package internal
 
 import (
 	"github.com/6-things-must-to-do/server/internal/auth"
+	"github.com/6-things-must-to-do/server/internal/setting"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/middlewares"
+	"github.com/6-things-must-to-do/server/internal/task"
 	"github.com/6-things-must-to-do/server/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -38,6 +40,11 @@ func GetAPI() *gin.Engine {
 	userGroup := authenticated.Group("/users")
 	user.InitModule(userGroup, db)
 
+	taskGroup := authenticated.Group("/tasks")
+	task.InitModule(taskGroup, db)
+
+	settingGroup := authenticated.Group("/settings")
+	setting.InitModule(settingGroup, db)
 	//{
 	//	taskGroup := authenticated.Group("/tasks")
 	//	router.InitTaskRouter(taskGroup)

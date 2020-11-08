@@ -14,6 +14,9 @@ import (
 
 func extractToken(r *http.Request) string {
 	bearerToken := r.Header.Get("Authorization")
+	if bearerToken == "" {
+		return ""
+	}
 	token := strings.Split(bearerToken, " ")[1]
 	return token
 }
@@ -69,7 +72,7 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		profile := &database.Profile{}
+		profile := &database.ProfileWithSetting{}
 		db := database.GetDB()
 		err = db.CoreTable.Get("PK", pk).Range("SK", dynamo.BeginsWith, "PROFILE#").One(profile)
 
@@ -79,18 +82,16 @@ func AuthRequired() gin.HandlerFunc {
 		}
 
 		c.Set("User", profile)
-		c.Next()
 	}
 }
 
-func GetUserProfile(c *gin.Context) *database.Profile {
+func GetUserProfile(c *gin.Context) *database.ProfileWithSetting {
 	user, ok := c.Get("User")
 	if !ok {
 		panic(errors.New("not authenticated"))
 	}
 
-	var profile *database.Profile
-	profile, ok = user.(*database.Profile)
+	profile, ok := user.(*database.ProfileWithSetting)
 	if !ok {
 		panic(errors.New("invalid user data"))
 	}

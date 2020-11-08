@@ -10,19 +10,20 @@ type ServiceInterface interface {
 	getUserProfile(pk string, sk string)
 }
 
-func transformUserProfileFromProfileSchema(p *database.Profile) *userProfile {
+func transformUserProfileFromProfileSchema(p *database.ProfileWithSetting) *userProfile {
 	up := &userProfile{
-		Email:        database.GetEmailFromSK(p.SK),
-		UUID:         database.GetUUIDFromPK(p.PK),
-		ProfileImage: p.ProfileImage,
-		Nickname:     p.Nickname,
+		Email:            database.GetEmailFromSK(p.SK),
+		UUID:             database.GetUUIDFromPK(p.PK),
+		ProfileImage:     p.ProfileImage,
+		Nickname:         p.Nickname,
+		TaskAlertSetting: p.TaskAlertSetting,
 	}
 
 	return up
 }
 
-func (s *service) getUserProfile (pk string) (*userProfile, error) {
-	profile := &database.Profile{}
+func (s *service) getUserProfile(pk string) (*userProfile, error) {
+	profile := &database.ProfileWithSetting{}
 
 	err := s.DB.CoreTable.Get("PK", pk).Range("SK", dynamo.BeginsWith, "PROFILE#").One(profile)
 	if err != nil {

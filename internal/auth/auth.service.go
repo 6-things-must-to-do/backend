@@ -10,7 +10,7 @@ import (
 )
 
 type ServiceInterface interface {
-	getOrCreateUser(p *getOrCreateUserParam) (*database.Profile, error)
+	getOrCreateUser(p *loginDto) (*database.Profile, error)
 	getJwtToken(pk string) string
 }
 
@@ -18,18 +18,10 @@ type service struct {
 	DB *database.DB
 }
 
-type getOrCreateUserParam struct {
-	id           string
-	email        string
-	provider     string
-	nickname     string
-	profileImage string
-}
-
-func (s *service) getOrCreateUser(p *getOrCreateUserParam) (*database.Profile, error) {
+func (s *service) getOrCreateUser(p *loginDto) (*database.Profile, error) {
 	ret := &database.Profile{}
-	hashedAppId := hashAppId(database.CreateAppID(p.id, p.provider))
-	err := s.DB.CoreTable.Get("AppID", hashedAppId).Index("AppID").Range("SK", dynamo.Equal, database.GetProfileSK(p.email)).One(ret)
+	hashedAppId := hashAppId(database.CreateAppID(p.ID, p.Provider))
+	err := s.DB.CoreTable.Get("AppID", hashedAppId).Index("AppID").Range("SK", dynamo.Equal, database.GetProfileSK(p.Email)).One(ret)
 	if err == nil {
 		return ret, nil
 	}
@@ -39,12 +31,12 @@ func (s *service) getOrCreateUser(p *getOrCreateUserParam) (*database.Profile, e
 		return nil, err
 	}
 
-	ret.Nickname = p.nickname
-	ret.ProfileImage = p.profileImage
+	ret.Nickname = p.Nickname
+	ret.ProfileImage = p.ProfileImage
 	ret.AppID = hashedAppId
-	ret.Provider = p.provider
+	ret.Provider = p.Provider
 	ret.PK = database.GetUserPK(uid)
-	ret.SK = database.GetProfileSK(p.email)
+	ret.SK = database.GetProfileSK(p.Email)
 
 	err = s.DB.CoreTable.Put(ret).Run()
 	if err != nil {

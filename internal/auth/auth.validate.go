@@ -7,8 +7,8 @@ import (
 	"github.com/6-things-must-to-do/server/internal/shared/utils/validate"
 )
 
-func loginFormValidator(form *loginForm) error {
-	required := map[string]string{"nickname": form.nickname, "provider": form.provider, "email": form.email, "id": form.id}
+func loginFormValidator(form *loginDto) error {
+	required := map[string]string{"nickname": form.Nickname, "provider": form.Provider, "email": form.Email, "id": form.ID}
 
 	// Check Required Field/
 	for field, value := range required {
@@ -20,13 +20,13 @@ func loginFormValidator(form *loginForm) error {
 
 	// Check available
 	available := []string{"google", "apple"}
-	isIncluded := slice.Includes(available, form.provider)
+	isIncluded := slice.Includes(available, form.Provider)
 	if !isIncluded {
 		return errors.New("unsupported provider")
 	}
 
 	// Check email validation
-	if !validate.IsEmail(form.email) {
+	if !validate.IsEmail(form.Email) {
 		return errors.New("invalid email form")
 	}
 

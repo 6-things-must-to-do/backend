@@ -6,13 +6,13 @@ import (
 )
 
 func FormError(c *gin.Context, errString string) {
-	c.JSON(http.StatusNotAcceptable, gin.H{"message": "Form has error.", "field": errString})
+	c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": "Form has error.", "field": errString})
 }
 
 func UnAuthenticatedError(c *gin.Context, err string) {
-	c.JSON(http.StatusForbidden, gin.H{"message": "Not authenticated", "error": err})
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Not authenticated", "error": err})
 }
 
 func BadRequestError(c *gin.Context, err string) {
-	c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request", "error": err})
+	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Bad request", "error": err})
 }

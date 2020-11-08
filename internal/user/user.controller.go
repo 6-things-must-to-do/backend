@@ -24,19 +24,6 @@ type controller struct {
 	service *service
 }
 
-func (uc *controller) getMyProfile(c *gin.Context) {
-	profile := middlewares.GetUserProfile(c)
-
-	ret := &userProfile{
-		Email:        database.GetEmailFromSK(profile.SK),
-		UUID:         database.GetUUIDFromPK(profile.PK),
-		ProfileImage: profile.ProfileImage,
-		Nickname:     profile.Nickname,
-	}
-
-	c.JSON(http.StatusOK, ret)
-}
-
 func (uc *controller) getUser(c *gin.Context) {
 	uuid := c.Param("uuid")
 	profile := middlewares.GetUserProfile(c)

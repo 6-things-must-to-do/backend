@@ -3,6 +3,7 @@ package auth
 import (
 	"github.com/6-things-must-to-do/server/internal/shared"
 	"github.com/gin-gonic/gin"
+	"github.com/labstack/gommon/log"
 	"net/http"
 )
 
@@ -15,28 +16,20 @@ type controller struct {
 }
 
 func (ac *controller) login(c *gin.Context) {
-	email := c.PostForm("email")
-	provider := c.PostForm("provider")
-	id := c.PostForm("id")
-	nickname := c.PostForm("nickname")
-	profileImage := c.PostForm("profileImage")
+	var dto loginDto
+	err := c.Bind(&dto)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 
-	form := &loginForm{email, provider, id, nickname}
-	err := loginFormValidator(form)
+	err = loginFormValidator(&dto)
 	if err != nil {
 		shared.FormError(c, err.Error())
 		return
 	}
 
-	param := &getOrCreateUserParam{
-		id:           id,
-		email:        email,
-		provider:     provider,
-		nickname:     nickname,
-		profileImage: profileImage,
-	}
-
-	user, err := ac.service.getOrCreateUser(param)
+	user, err := ac.service.getOrCreateUser(&dto)
 	if err != nil {
 		panic(err)
 	}

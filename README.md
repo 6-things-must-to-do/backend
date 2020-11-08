@@ -12,11 +12,13 @@ Golang serverless backend for STMT Application
 ## API
 
 ### GET
-- User info by appId & email (Login)
+- [x] User info by uuid (My page, Get user)
 - User's latest tasks (appId & date (sort))
 - Get Todo list & Task info by Task ID
 
 ### POST
+- [x] Issue JWT by appId, provider, email
+- [x] Create user if don't exist 
 - Add a friend with email
 - Add today's task (appId, date)
 - Add task todo (taskId)
@@ -32,10 +34,11 @@ Golang serverless backend for STMT Application
 ## AWS DynamoDB Table
 - PK SK Inverted GSI 
 - Score LSI (Sparse Key)
+- AppID, SK GSI (H: SK, SK: AppID)
  
-|PK|SK|nickname|profile|todo|score|memo|where|willStart|estimatedMinutes|completedAt|createdAt|
-|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-|USER#appId|PROFILE#email|Nickname|imgUrl|-|-|-|-|-|-|-|-|-|-|
-|USER#appId|REC#appId#date|-|-|-|999|-|-|-|-|-|-|
-|TASK#uuid|REC#appId#date|-|-|[]|-|blah|hanyang univ|1604343297363|300|1604343441719|1604343257363|
-|TASK#uuid|REC#appId#date|-|-|[{content, isCompleted}]|-|-|-|-|-|-|1604343277363|
+|PK|SK|AppID|nickname|profile|todo|score|memo|where|willStart|estimatedMinutes|completedAt|createdAt|
+|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
+|USER#uuid|PROFILE#email|Hashed AppID|Nickname|imgUrl|-|-|-|-|-|-|-|-|-|-|
+|USER#uuid|REC#appId#date|-|-|-|-|999|-|-|-|-|-|-|
+|TASK#uuid|REC#appId#date|-|-|-|[]|-|blah|hanyang univ|1604343297363|300|1604343441719|1604343257363|
+|TASK#uuid|REC#appId#date|-|-|-|[{content, isCompleted}]|-|-|-|-|-|-|1604343277363|
