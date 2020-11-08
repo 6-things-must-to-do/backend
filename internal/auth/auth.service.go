@@ -1,11 +1,12 @@
 package auth
 
 import (
+	"errors"
+	"fmt"
 	"github.com/6-things-must-to-do/server/internal/shared/configs"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
-	"github.com/guregu/dynamo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,11 +19,21 @@ type service struct {
 	DB *database.DB
 }
 
-func (s *service) getOrCreateUser(p *loginDto) (*database.Profile, error) {
-	ret := &database.Profile{}
-	hashedAppId := hashAppId(database.CreateAppID(p.ID, p.Provider))
-	err := s.DB.CoreTable.Get("AppID", hashedAppId).Index("AppID").Range("SK", dynamo.Equal, database.GetProfileSK(p.Email)).One(ret)
+func (s *service) getOrCreateUser(p *loginDto) (*database.ProfileWithSetting, error) {
+	ret := &database.ProfileWithSetting{}
+	dtoAppId := database.CreateAppID(p.ID, p.Provider)
+
+	err := s.DB.CoreTable.Get("SK", database.GetProfileSK(p.Email)).Index("Inverted").One(ret)
 	if err == nil {
+		ok, err := Compare(ret.AppID, dtoAppId)
+		if err != nil {
+			return nil, err
+		}
+
+		if !ok {
+			return nil, errors.New("this email was already used with other provider")
+		}
+
 		return ret, nil
 	}
 
@@ -30,6 +41,8 @@ func (s *service) getOrCreateUser(p *loginDto) (*database.Profile, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	hashedAppId := hashAppId(dtoAppId)
 
 	ret.Nickname = p.Nickname
 	ret.ProfileImage = p.ProfileImage
@@ -47,13 +60,27 @@ func (s *service) getOrCreateUser(p *loginDto) (*database.Profile, error) {
 }
 
 func hashAppId(appId string) string {
+	fmt.Println(appId)
 	bytes := []byte(appId)
 	hash, err := bcrypt.GenerateFromPassword(bytes, bcrypt.MinCost)
+	fmt.Println(string(hash))
 	if err != nil {
 		panic(err)
 	}
 
 	return string(hash)
+}
+
+func Compare(hash, appId string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(appId))
+	if err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			// MEMO: err를 wrap 하여 상세를 전달하면 좋다
+			return false, err
+		}
+		return false, err
+	}
+	return true, nil
 }
 
 type JwtClaims struct {
