@@ -1,7 +1,9 @@
 .PHONY: build clean deploy
 
-dev:
+devbuild: clean
 	go build -o bin/local ./cmd/local/main.go;
+
+dev: devbuild
 	./bin/local
 
 dynamodb:
