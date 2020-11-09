@@ -20,7 +20,7 @@ func GetDB() *DB {
 
 	db = new(DB)
 
-	db.DynamoDB = dynamo.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-2"), Endpoint: aws.String("http://localhost:8000")})
+	db.DynamoDB = dynamo.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-2"), Endpoint: aws.String("http://127.0.0.1:8000")})
 	db.CoreTable = db.DynamoDB.Table("STMTCore")
 	return db
 }
