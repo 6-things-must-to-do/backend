@@ -1,7 +1,7 @@
-package router
+package social
 
 import (
-	"github.com/gin-gonic/gin"
+"github.com/gin-gonic/gin"
 )
 
 type socialRouterInterface interface {
@@ -37,12 +37,12 @@ func (r *socialRouter) getLeaderboard(c *gin.Context) {
 	//
 }
 
-func getSocialRouter() socialRouterInterface {
+func newController() socialRouterInterface {
 	return new(socialRouter)
 }
 
-func InitSocialRouter(router *gin.RouterGroup) {
-	r := getSocialRouter()
+func initController(router *gin.RouterGroup) {
+	r := newController()
 
 	router.GET("/friends", r.getFriendList)
 	router.POST("/friends", r.addFriend)

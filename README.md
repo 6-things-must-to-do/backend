@@ -31,14 +31,85 @@ Golang serverless backend for STMT Application
 - Complete Todo by task id
 - Complete Task by task id
 
-## AWS DynamoDB Table
+## AWS DynamoDB Core Table
+
+### Additional Indexes
 - PK SK Inverted GSI 
-- Score LSI (Sparse Key)
 - AppID, SK GSI (H: SK, SK: AppID)
  
-|PK|SK|AppID|nickname|profile|todo|score|memo|where|willStart|estimatedMinutes|completedAt|createdAt|
-|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|
-|USER#uuid|PROFILE#email|Hashed AppID|Nickname|imgUrl|-|-|-|-|-|-|-|-|-|-|
-|USER#uuid|REC#appId#date|-|-|-|-|999|-|-|-|-|-|-|
-|TASK#uuid|REC#appId#date|-|-|-|[]|-|blah|hanyang univ|1604343297363|300|1604343441719|1604343257363|
-|TASK#uuid|REC#appId#date|-|-|-|[{content, isCompleted}]|-|-|-|-|-|-|1604343277363|
+### Table schema
+
+all in one table
+
+---
+#### Profile
+
+|    PK     |      SK       |    AppID     | nickname | profile |       |
+| :-------: | :-----------: | :----------: | :------: | :-----: | :---: |
+| USER#uuid | PROFILE#email | Hashed AppID | Nickname | imgUrl  |
+  
+---
+
+#### Openess
+|    PK     |        SK         |
+| :-------: | :---------------: |
+| USER#uuid | OPEN#ACCOUNT#CODE |
+| USER#uuid | OPEN#RECORD#CODE  |
+| USER#uuid |  OPEN#TASK#CODE   |
+
+> **ACCOUNT OPENNESS (SK)**  
+> | CODE  | SEARCH & BI-FOLLOW | OPEN FOLLOW |
+> | :---: | :----------------: | :---------: |
+> |   0   |         X          |      X      |
+> |   1   |         O          |      X      |
+> |   2   |         O          |      O      |
+
+> **RECORD OPENNESS (SK)**  
+> | CODE  | `RANK FRIENDS` CANDIDATE | `RANK ALL` CANDIDATE |
+> | :---: | :----------------------: | :------------------: |
+> |   0   |            X             |          X           |
+> |   1   |            O             |          X           |
+> |   2   |            O             |          O           |
+
+
+>  **TASK OPENNESS (SK)**  
+> | CODE  | FRIENDS |  ALL  |
+> | :---: | :-----: | :---: |
+> |   0   |    X    |   X   |
+> |   1   |    O    |   X   |
+> |   2   |    O    |   O   |
+
+---
+
+#### Current Task
+
+User get only 6 tasks row
+
+|    PK     |      SK      | index |                    todo                    |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
+| :-------: | :----------: | :---: | :----------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
+| USER#uuid | TASK#CURRENT |   0   | [{"content": "todo", "isCompleted":false}] |            |              |
+| USER#uuid | TASK#CURRENT |   1   |                     []                     | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
+
+---
+
+#### Record
+
+|    PK     |        SK         |     tasks     |
+| :-------: | :---------------: | :-----------: |
+| USER#uuid | RECORD#YYYY-MM-DD | `Array<Task>` |
+
+---
+
+### Follow
+
+|      PK       |      SK       |
+| :-----------: | :-----------: |
+| FOLLOWER#uuid | PROFILE#email |
+
+---
+
+### Follow Request
+
+|       PK        |      SK       |
+| :-------------: | :-----------: |
+| REQ#FOLLOW#uuid | PROFILE#email |

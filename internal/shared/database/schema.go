@@ -33,13 +33,13 @@ type Record struct {
 
 type Task struct {
 	Key
-	Todo             []Todo    `json:"todo"`
-	Memo             string    `json:"memo"`
-	Where            string    `json:"where"`
-	WillStart        time.Time `json:"willStart"`
-	EstimatedMinutes int       `json:"estimatedMinutes"`
-	CompletedAt      time.Time `json:"completedAt"`
-	CreatedAt        time.Time `json:"createdAt"`
+	Todo             []Todo    `json:"todo" form:"todo" binding:"required"`
+	Memo             string    `json:"memo,omitempty" form:"memo"`
+	Where            string    `json:"where,omitempty" form:"where"`
+	WillStart        time.Time `json:"willStart,omitempty"`
+	EstimatedMinutes int       `json:"estimatedMinutes,omitempty"`
+	CompletedAt      time.Time `json:"completedAt,omitempty"`
+	CreatedAt        time.Time `json:"createdAt" form:"createdAt" binding:"required"`
 }
 
 type Todo struct {
