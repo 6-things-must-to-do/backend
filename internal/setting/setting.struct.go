@@ -1,13 +1,13 @@
 package setting
 
-import "github.com/6-things-must-to-do/server/internal/shared/database"
+import "github.com/6-things-must-to-do/server/internal/shared/database/schema"
 
 type setTaskAlertDto struct {
-	database.TaskAlertSetting
+	schema.TaskAlertSetting
 }
 
 type userWithSetting struct {
-	PK               string                    `json:"-"`
-	SK               string                    `json:"-"`
-	TaskAlertSetting database.TaskAlertSetting `json:"taskAlertSetting" dynamo:",set"`
+	PK               string                  `json:"-"`
+	SK               string                  `json:"-"`
+	TaskAlertSetting schema.TaskAlertSetting `json:"taskAlertSetting" dynamo:",set"`
 }

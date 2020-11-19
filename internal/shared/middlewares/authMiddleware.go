@@ -2,14 +2,16 @@ package middlewares
 
 import (
 	"errors"
+	"net/http"
+	"strings"
+
 	"github.com/6-things-must-to-do/server/internal/shared"
 	"github.com/6-things-must-to-do/server/internal/shared/configs"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/guregu/dynamo"
-	"net/http"
-	"strings"
 )
 
 func extractToken(r *http.Request) string {
@@ -52,6 +54,7 @@ func extractPK(token *jwt.Token) string {
 	return pk
 }
 
+// AuthRequired ...
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := extractToken(c.Request)
@@ -72,7 +75,7 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		profile := &database.ProfileWithSetting{}
+		profile := &schema.ProfileSchema{}
 		db := database.GetDB()
 		err = db.CoreTable.Get("PK", pk).Range("SK", dynamo.BeginsWith, "PROFILE#").One(profile)
 
@@ -85,13 +88,14 @@ func AuthRequired() gin.HandlerFunc {
 	}
 }
 
-func GetUserProfile(c *gin.Context) *database.ProfileWithSetting {
+// GetUserProfile ...
+func GetUserProfile(c *gin.Context) *schema.ProfileSchema {
 	user, ok := c.Get("User")
 	if !ok {
 		panic(errors.New("not authenticated"))
 	}
 
-	profile, ok := user.(*database.ProfileWithSetting)
+	profile, ok := user.(*schema.ProfileSchema)
 	if !ok {
 		panic(errors.New("invalid user data"))
 	}

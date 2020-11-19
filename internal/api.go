@@ -1,7 +1,10 @@
 package internal
 
 import (
+	"os"
+
 	"github.com/6-things-must-to-do/server/internal/auth"
+	"github.com/6-things-must-to-do/server/internal/record"
 	"github.com/6-things-must-to-do/server/internal/setting"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/middlewares"
@@ -9,9 +12,9 @@ import (
 	"github.com/6-things-must-to-do/server/internal/user"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"os"
 )
 
+// GetAPI ...
 func GetAPI() *gin.Engine {
 	r := gin.Default()
 
@@ -43,17 +46,11 @@ func GetAPI() *gin.Engine {
 	taskGroup := authenticated.Group("/tasks")
 	task.InitModule(taskGroup, db)
 
+	recordGroup := authenticated.Group("/records")
+	record.InitModule(recordGroup, db)
+
 	settingGroup := authenticated.Group("/settings")
 	setting.InitModule(settingGroup, db)
-	//{
-	//	taskGroup := authenticated.Group("/tasks")
-	//	router.InitTaskRouter(taskGroup)
-	//
-	//	socialGroup := authenticated.Group("/social")
-	//	router.InitSocialRouter(socialGroup)
-	//
-	//	userGroup := authenticated.Group("/users")
-	//	router.InitUserRouter(userGroup)
-	//}
+
 	return r
 }

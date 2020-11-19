@@ -3,15 +3,17 @@ package auth
 import (
 	"errors"
 	"fmt"
+
 	"github.com/6-things-must-to-do/server/internal/shared/configs"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type ServiceInterface interface {
-	getOrCreateUser(p *loginDto) (*database.Profile, error)
+type serviceInterface interface {
+	getOrCreateUser(p *loginDto) (*schema.ProfileWithSetting, error)
 	getJwtToken(pk string) string
 }
 
@@ -19,13 +21,13 @@ type service struct {
 	DB *database.DB
 }
 
-func (s *service) getOrCreateUser(p *loginDto) (*database.ProfileWithSetting, error) {
-	ret := &database.ProfileWithSetting{}
-	dtoAppId := database.CreateAppID(p.ID, p.Provider)
+func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
+	ret := &schema.ProfileSchema{}
+	dtoAppID := database.CreateAppID(p.ID, p.Provider)
 
 	err := s.DB.CoreTable.Get("SK", database.GetProfileSK(p.Email)).Index("Inverted").One(ret)
 	if err == nil {
-		ok, err := Compare(ret.AppID, dtoAppId)
+		ok, err := Compare(ret.AppID, dtoAppID)
 		if err != nil {
 			return nil, err
 		}
@@ -42,11 +44,11 @@ func (s *service) getOrCreateUser(p *loginDto) (*database.ProfileWithSetting, er
 		return nil, err
 	}
 
-	hashedAppId := hashAppId(dtoAppId)
+	hashed := hashAppID(dtoAppID)
 
 	ret.Nickname = p.Nickname
 	ret.ProfileImage = p.ProfileImage
-	ret.AppID = hashedAppId
+	ret.AppID = hashed
 	ret.Provider = p.Provider
 	ret.PK = database.GetUserPK(uid)
 	ret.SK = database.GetProfileSK(p.Email)
@@ -59,9 +61,9 @@ func (s *service) getOrCreateUser(p *loginDto) (*database.ProfileWithSetting, er
 	return ret, nil
 }
 
-func hashAppId(appId string) string {
-	fmt.Println(appId)
-	bytes := []byte(appId)
+func hashAppID(appID string) string {
+	fmt.Println(appID)
+	bytes := []byte(appID)
 	hash, err := bcrypt.GenerateFromPassword(bytes, bcrypt.MinCost)
 	fmt.Println(string(hash))
 	if err != nil {
@@ -71,8 +73,9 @@ func hashAppId(appId string) string {
 	return string(hash)
 }
 
-func Compare(hash, appId string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(appId))
+// Compare ...
+func Compare(hash, appID string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(appID))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
 			// MEMO: err를 wrap 하여 상세를 전달하면 좋다
@@ -83,6 +86,7 @@ func Compare(hash, appId string) (bool, error) {
 	return true, nil
 }
 
+// JwtClaims ...
 type JwtClaims struct {
 	PK string `json:"pk"`
 	jwt.StandardClaims

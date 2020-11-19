@@ -1,11 +1,12 @@
 package setting
 
 import (
-	"github.com/6-things-must-to-do/server/internal/shared/database"
+	"net/http"
+
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	"github.com/6-things-must-to-do/server/internal/shared/middlewares"
 	"github.com/gin-gonic/gin"
 	"github.com/labstack/gommon/log"
-	"net/http"
 )
 
 type controllerInterface interface {
@@ -29,7 +30,7 @@ func (sc *controller) taskAlert(c *gin.Context) {
 	setting := &userWithSetting{
 		PK: user.PK,
 		SK: user.SK,
-		TaskAlertSetting: database.TaskAlertSetting{
+		TaskAlertSetting: schema.TaskAlertSetting{
 			Hour:   dto.Hour,
 			Minute: dto.Minute,
 			Offset: dto.Offset,

@@ -1,11 +1,11 @@
 package user
 
-import "github.com/6-things-must-to-do/server/internal/shared/database"
+import "github.com/6-things-must-to-do/server/internal/shared/database/schema"
 
 type userProfile struct {
-	Email            string                    `json:"email"`
-	UUID             string                    `json:"uuid"`
-	ProfileImage     string                    `json:"profileImage"`
-	Nickname         string                    `json:"nickname"`
-	TaskAlertSetting database.TaskAlertSetting `json:"taskAlertSetting"`
+	Email            string                  `json:"email"`
+	UUID             string                  `json:"uuid"`
+	ProfileImage     string                  `json:"profileImage"`
+	Nickname         string                  `json:"nickname"`
+	TaskAlertSetting schema.TaskAlertSetting `json:"taskAlertSetting"`
 }

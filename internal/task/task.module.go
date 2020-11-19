@@ -6,5 +6,6 @@ import (
 )
 
 func InitModule(c *gin.RouterGroup, DB *database.DB) {
-	initController(c, &service{DB: DB})
+	service := GetService(DB)
+	initController(c, service)
 }

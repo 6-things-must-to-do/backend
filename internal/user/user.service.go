@@ -2,15 +2,18 @@ package user
 
 import (
 	"errors"
+
 	"github.com/6-things-must-to-do/server/internal/shared/database"
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	"github.com/guregu/dynamo"
 )
 
+// ServiceInterface ...
 type ServiceInterface interface {
 	getUserProfile(pk string, sk string)
 }
 
-func transformUserProfileFromProfileSchema(p *database.ProfileWithSetting) *userProfile {
+func transformUserProfileFromProfileSchema(p *schema.ProfileSchema) *userProfile {
 	up := &userProfile{
 		Email:            database.GetEmailFromSK(p.SK),
 		UUID:             database.GetUUIDFromPK(p.PK),
@@ -23,7 +26,7 @@ func transformUserProfileFromProfileSchema(p *database.ProfileWithSetting) *user
 }
 
 func (s *service) getUserProfile(pk string) (*userProfile, error) {
-	profile := &database.ProfileWithSetting{}
+	profile := &schema.ProfileSchema{}
 
 	err := s.DB.CoreTable.Get("PK", pk).Range("SK", dynamo.BeginsWith, "PROFILE#").One(profile)
 	if err != nil {

@@ -2,48 +2,28 @@ package task
 
 import (
 	"github.com/6-things-must-to-do/server/internal/shared/database"
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	uuid2 "github.com/gofrs/uuid"
 	"github.com/guregu/dynamo"
 )
 
+// ServiceInterface ...
 type ServiceInterface interface {
-	getCurrentTasks(userID string) ([]database.Task, error)
-	createRecord(dto *SaveRecordDto) (*database.Task, error)
+	getCurrentTasks(userID string) ([]schema.Task, error)
 }
 
-type service struct {
+// Service ...
+type Service struct {
 	DB *database.DB
 }
 
-func (s *service) createRecord(uid string, dto *SaveRecordDto) (*database.Record, error) {
+func (s *Service) getCurrentTasks(uid string) ([]schema.Task, error) {
 	uuid, err := uuid2.FromString(uid)
 	if err != nil {
 		return nil, err
 	}
 
-	pk := database.GetUserPK(uuid)
-	sk := database.GetRecordSK(dto.Date)
-
-	record := &database.Record{
-		Key:   database.Key{PK: pk, SK: sk},
-		Tasks: dto.Tasks,
-	}
-
-	err = s.DB.CoreTable.Put(record).Run()
-	if err != nil {
-		return nil, err
-	}
-
-	return record, nil
-}
-
-func (s *service) getCurrentTasks(uid string) ([]database.Task, error) {
-	uuid, err := uuid2.FromString(uid)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []database.Task
+	ret := make([]schema.Task, 0)
 
 	err = s.DB.CoreTable.Get("PK", database.GetUserPK(uuid)).Range("SK", dynamo.BeginsWith, "TASK#").All(ret)
 	if err != nil {
@@ -53,7 +33,11 @@ func (s *service) getCurrentTasks(uid string) ([]database.Task, error) {
 	return ret, nil
 }
 
-func (s *service) updateTaskDetail(uid string, index int, task *database.Task) error {
+func (s *Service) addTask(uid string, dto *AddCurrentTaskDto) {
+	//
+}
+
+func (s *Service) updateTaskDetail(uid string, index int, task *schema.Task) error {
 	uuid, err := uuid2.FromString(uid)
 	if err != nil {
 		return err
@@ -67,7 +51,7 @@ func (s *service) updateTaskDetail(uid string, index int, task *database.Task) e
 	return nil
 }
 
-func (s *service) updateTaskPriority(uid string, from int, to int) error {
+func (s *Service) updateTaskPriority(uid string, from int, to int) error {
 	uuid, err := uuid2.FromString(uid)
 	if err != nil {
 		return err
@@ -84,12 +68,13 @@ func (s *service) updateTaskPriority(uid string, from int, to int) error {
 	return nil
 }
 
-var cachedService *service
+var cachedService *Service
 
-func GetTaskService() *service {
+// GetService ...
+func GetService(DB *database.DB) *Service {
 	if cachedService != nil {
 		return cachedService
 	}
-	cachedService = new(service)
+	cachedService = &Service{DB: DB}
 	return cachedService
 }
