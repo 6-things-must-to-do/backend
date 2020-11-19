@@ -85,10 +85,10 @@ all in one table
 
 User get only 6 tasks row
 
-|    PK     |      SK      | index |                    todo                    |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
-| :-------: | :----------: | :---: | :----------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
-| USER#uuid | TASK#CURRENT |   0   | [{"content": "todo", "isCompleted":false}] |            |              |
-| USER#uuid | TASK#CURRENT |   1   |                     []                     | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
+|    PK     |      SK      |                    todo                    |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
+| :-------: | :----------: | :----------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
+| USER#uuid | TASK#index   | [{"content": "todo", "isCompleted":false}] |            |              |
+| USER#uuid | TASK#index   |                     []                     | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
 
 ---
 

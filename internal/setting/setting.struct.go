@@ -7,7 +7,7 @@ type setTaskAlertDto struct {
 }
 
 type userWithSetting struct {
-	PK               string `json:"-"`
-	SK               string `json:"-"`
+	PK               string                    `json:"-"`
+	SK               string                    `json:"-"`
 	TaskAlertSetting database.TaskAlertSetting `json:"taskAlertSetting" dynamo:",set"`
 }

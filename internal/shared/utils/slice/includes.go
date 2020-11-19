@@ -1,4 +1,4 @@
-package slice
+package sliceUtil
 
 func Includes(slice []string, target string) bool {
 	for _, val := range slice {

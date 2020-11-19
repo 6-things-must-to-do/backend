@@ -24,8 +24,6 @@ func (tc *controller) saveRecord(c *gin.Context) {
 		log.Error(err)
 		return
 	}
-
-
 }
 
 func (tc *controller) getDashboardData(c *gin.Context) {

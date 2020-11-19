@@ -28,12 +28,13 @@ type Profile struct {
 
 type Record struct {
 	Key
-	Score int `json:"score"` // LSI
+	Score int    `json:"score"` // LSI
+	Tasks []Task `json:"tasks" form:"tasks" binding:"required"`
 }
 
 type Task struct {
 	Key
-	Todo             []Todo    `json:"todo" form:"todo" binding:"required"`
+	Todos             []Todo    `json:"todo" form:"todo" binding:"required"`
 	Memo             string    `json:"memo,omitempty" form:"memo"`
 	Where            string    `json:"where,omitempty" form:"where"`
 	WillStart        time.Time `json:"willStart,omitempty"`
