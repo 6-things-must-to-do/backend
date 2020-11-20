@@ -3,13 +3,16 @@ package task
 import (
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
-	uuid2 "github.com/gofrs/uuid"
 	"github.com/guregu/dynamo"
+	"time"
 )
 
 // ServiceInterface ...
 type ServiceInterface interface {
-	getCurrentTasks(userID string) ([]schema.Task, error)
+	getCurrentTasks(userPK string) (*[]schema.Task, error)
+	getTaskDetail(userPK string, index int) (*schema.Task, error)
+	lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]schema.Task, error)
+	clearCurrentTasks(userPK string) error
 }
 
 // Service ...
@@ -17,55 +20,95 @@ type Service struct {
 	DB *database.DB
 }
 
-func (s *Service) getCurrentTasks(uid string) ([]schema.Task, error) {
-	uuid, err := uuid2.FromString(uid)
+func (s *Service) lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]schema.Task, error) {
+
+	tx := s.DB.DynamoDB.WriteTx()
+
+	for _, task := range dto.Current.Tasks {
+		base := &schema.TaskSchema{
+			Key:  schema.Key{
+				PK: userPK,
+				SK: database.GetTaskSK(task.Index),
+			},
+			Task: schema.Task{
+				Todos:            task.Todos,
+				Title:            task.Title,
+				Index:            task.Index,
+				Memo:             task.Memo,
+				Where:            task.Where,
+				WillStart:        task.WillStart,
+				EstimatedMinutes: task.EstimatedMinutes,
+				CompletedAt:      task.CompletedAt,
+				CreatedAt:        task.CreatedAt,
+			},
+		}
+		tx = tx.Put(s.DB.CoreTable.Put(base))
+	}
+
+	err := tx.Run()
 	if err != nil {
 		return nil, err
 	}
 
+	return &dto.Current.Tasks, nil
+}
+
+func (s *Service) getCurrentTasks(userPK string) (*[]schema.Task, error) {
 	ret := make([]schema.Task, 0)
 
-	err = s.DB.CoreTable.Get("PK", database.GetUserPK(uuid)).Range("SK", dynamo.BeginsWith, "TASK#").All(ret)
+	err := s.DB.CoreTable.Get("PK", userPK).Range("SK", dynamo.BeginsWith, "TASK#").All(&ret)
 	if err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return &ret, nil
 }
 
-func (s *Service) addTask(uid string, dto *AddCurrentTaskDto) {
-	//
+func (s *Service) getTaskDetail(userPK string, index int) (*schema.Task, error) {
+	var task schema.Task
+
+	err := s.DB.CoreTable.Get("PK", userPK).Range("SK", dynamo.Equal, database.GetTaskSK(index)).One(&task)
+	if err != nil {
+		return nil, err
+	}
+
+	return &task, nil
 }
 
-func (s *Service) updateTaskDetail(uid string, index int, task *schema.Task) error {
-	uuid, err := uuid2.FromString(uid)
+func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
+	var tasks []schema.Task
+
+	err := s.DB.CoreTable.Get("PK", userPK).Range("SK", dynamo.BeginsWith, "TASK#").All(&tasks)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	uTarget := s.DB.CoreTable.Update("PK", database.GetUserPK(uuid)).Range("SK", database.GetTaskSk(index))
+	var keys []dynamo.Keyed
 
-	//
-	uTarget.Set("CompletedAt", task.CompletedAt).Set("EstimatedMinutes", task.EstimatedMinutes).Set("Memo", task.Memo).Set("Todos", task.Todos).Set("Where", task.Where)
-
-	return nil
-}
-
-func (s *Service) updateTaskPriority(uid string, from int, to int) error {
-	uuid, err := uuid2.FromString(uid)
-	if err != nil {
-		return err
+	record := schema.Record{
+		Score: 0,
+		Tasks: tasks,
+	}
+	recordSchema := schema.RecordSchema{
+		Key:    schema.Key{
+			PK: userPK,
+			SK: database.GetRecordSK(time.Now()),
+		},
+		Record: record,
 	}
 
-	fromUpdate := s.DB.CoreTable.Update("PK", database.GetUserPK(uuid)).Range("SK", database.GetTaskSk(from)).Set("SK", database.GetTaskSk(to))
-	toUpdate := s.DB.CoreTable.Update("PK", database.GetUserPK(uuid)).Range("SK", database.GetTaskSk(to)).Set("SK", database.GetTaskSk(from))
+	for _, task := range tasks {
+		key := dynamo.Keys{userPK, database.GetTaskSK(task.Index)}
 
-	err = s.DB.DynamoDB.WriteTx().Update(fromUpdate).Update(toUpdate).Run()
-	if err != nil {
-		return err
+		keys = append(keys, key)
 	}
 
-	return nil
+	_, err = s.DB.CoreTable.Batch("PK", "SK").Write().Delete(keys...).Put(&recordSchema).Run()
+	if err != nil {
+		return nil, err
+	}
+
+	return &record, nil
 }
 
 var cachedService *Service

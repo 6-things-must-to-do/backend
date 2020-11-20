@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	timeUtil "github.com/6-things-must-to-do/server/internal/shared/utils/time"
+	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	"github.com/gofrs/uuid"
 	"strings"
 	"time"
@@ -14,12 +15,12 @@ func GetUserPK(uuid uuid.UUID) string {
 }
 
 func GetRecordSK(date time.Time) string {
-	formatted := timeUtil.GetDate(date)
-	ret := fmt.Sprintf("RECORD#%s", formatted)
+	formatted := transformUtil.ToJSUnixTimestamp(timeUtil.GetUnixTimestamp(date))
+	ret := fmt.Sprintf("RECORD#%d", formatted)
 	return ret
 }
 
-func GetTaskSk(index int) string {
+func GetTaskSK(index int) string {
 	ret := fmt.Sprintf("TASK#%d", index)
 	return ret
 }
