@@ -4,32 +4,31 @@ Golang serverless backend for STMT Application
 
 ## Requirements
 
-- [ ] Swagger
 - [ ] Build script & Makefile
 - [ ] Serverless framework setup
 - [ ] Service Logic
  
 ## API
 
-### GET
-- [x] User info by uuid (My page, Get user)
-- User's latest tasks (appId & date (sort))
-- Get Todo list & Task info by Task ID
+### AUTH
 
-### POST
-- [x] Issue JWT by appId, provider, email
-- [x] Create user if don't exist 
-- Add a friend with email
-- Add today's task (appId, date)
-- Add task todo (taskId)
+- [x] Signup & Signin with google login
 
-### DELETE
-- Remove Friend with appId
-- Remove Account (then, remove all records & tasks & todos & friendlist)
+### USER (Authentication is required)
+- [x] Get user info by uuid (My page, Get user)
+- [ ] Remove login user account
+- [ ] Follow user by user email
+- [ ] Unfollow user by user email
 
-### PUT
-- Complete Todo by task id
-- Complete Task by task id
+### TASK
+- [x] Lock user's current task list (create current task list)
+- [x] Get user's current task list (get locked task list)
+- [x] Clear user's current task & create a record (when the current task list lock time passes)
+- [ ] Update progress of current tasks (ex. Check the task complete)
+
+### Record
+- [ ] Get login user's dashboard data
+- [ ] Get other user's a week's amount of record by specific date and user email (only if the user has given permission)
 
 ## AWS DynamoDB Core Table
 
@@ -85,18 +84,18 @@ all in one table
 
 User get only 6 tasks row
 
-|    PK     |      SK      |                    todo                    |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
-| :-------: | :----------: | :----------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
-| USER#uuid | TASK#index   | [{"content": "todo", "isCompleted":false}] |            |              |
-| USER#uuid | TASK#index   |                     []                     | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
+|    PK     |     SK     |                    todo                    |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
+| :-------: | :--------: | :----------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
+| USER#uuid | TASK#index | [{"content": "todo", "isCompleted":false}] |            |              |
+| USER#uuid | TASK#index |                     []                     | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
 
 ---
 
 #### Record
 
-|    PK     |        SK         |     tasks     |
-| :-------: | :---------------: | :-----------: |
-| USER#uuid | RECORD#YYYY-MM-DD | `Array<Task>` |
+|    PK     |        SK        |     tasks     |
+| :-------: | :--------------: | :-----------: |
+| USER#uuid | RECORD#timestamp | `Array<Task>` |
 
 ---
 
