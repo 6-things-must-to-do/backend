@@ -15,6 +15,6 @@ type CurrentTasks struct {
 
 // LockTime int `json:"lockTime" form:"lockTime" binding:"required"`
 type LockCurrentTasksDTO struct {
-	LockTime int `json:"lockTime" form:"lockTime" binding:"required"`
+	LockTime int64 `json:"lockTime" form:"lockTime" binding:"required"`
 	Current CurrentTasks `json:"current" form:"current" binding:"required"`
 }

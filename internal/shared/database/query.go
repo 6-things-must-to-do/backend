@@ -2,11 +2,8 @@ package database
 
 import (
 	"fmt"
-	timeUtil "github.com/6-things-must-to-do/server/internal/shared/utils/time"
-	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	"github.com/gofrs/uuid"
 	"strings"
-	"time"
 )
 
 func GetUserPK(uuid uuid.UUID) string {
@@ -14,9 +11,8 @@ func GetUserPK(uuid uuid.UUID) string {
 	return ret
 }
 
-func GetRecordSK(date time.Time) string {
-	formatted := transformUtil.ToJSUnixTimestamp(timeUtil.GetUnixTimestamp(date))
-	ret := fmt.Sprintf("RECORD#%d", formatted)
+func GetRecordSK(lockTime int64) string {
+	ret := fmt.Sprintf("RECORD#%d", lockTime)
 	return ret
 }
 

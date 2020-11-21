@@ -5,7 +5,6 @@ import (
 	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	"github.com/guregu/dynamo"
-	"time"
 )
 
 // ServiceInterface ...
@@ -116,7 +115,7 @@ func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
 	var keys []dynamo.Keyed
 
 	record := schema.Record{
-		Score: 0,
+		Score: meta.Percent,
 		Tasks: *tasks,
 		Meta: *meta,
 	}
@@ -124,7 +123,7 @@ func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
 	recordSchema := schema.RecordSchema{
 		Key:    schema.Key{
 			PK: userPK,
-			SK: database.GetRecordSK(time.Now()),
+			SK: database.GetRecordSK(meta.LockTime),
 		},
 		Record: record,
 	}
@@ -135,7 +134,14 @@ func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
 		keys = append(keys, key)
 	}
 
-	_, err = s.DB.CoreTable.Batch("PK", "SK").Write().Delete(keys...).Put(&recordSchema).Run()
+	metaKey := dynamo.Keys{userPK, "TASK#meta"}
+	keys = append(keys, metaKey)
+
+	_, err = s.DB.CoreTable.Batch("PK", "SK").Write().
+		Delete(keys...).
+		Put(&recordSchema).
+		Run()
+
 	if err != nil {
 		return nil, err
 	}

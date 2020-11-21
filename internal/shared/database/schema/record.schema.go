@@ -2,8 +2,8 @@ package schema
 
 // Record ...
 type Record struct {
-	Score int    `json:"score"` // LSI
-	Tasks []Task `json:"tasks" form:"tasks" binding:"required" dynamo:",set"`
+	Score float64    `json:"score"` // LSI
+	Tasks []Task `json:"tasks" form:"tasks" binding:"required"`
 	Meta  Meta   `json:"meta" dynamo:",set"`
 }
 

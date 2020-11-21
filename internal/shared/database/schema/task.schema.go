@@ -5,7 +5,7 @@ type Meta struct {
 	InComplete int     `json:"inComplete"`
 	Complete   int     `json:"complete"`
 	Percent    float64 `json:"percent"`
-	LockTime   int     `json:"lockTime"`
+	LockTime   int64     `json:"lockTime"`
 }
 
 // MetaSchema ...
@@ -18,7 +18,7 @@ type MetaSchema struct {
 type Todo struct {
 	IsCompleted bool   `json:"isCompleted"`
 	Content     string `json:"content"`
-	CreatedAt   int    `json:"createdAt"`
+	CreatedAt   int64    `json:"createdAt"`
 }
 
 // Task ...
