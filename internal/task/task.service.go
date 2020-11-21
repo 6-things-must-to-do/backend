@@ -3,6 +3,7 @@ package task
 import (
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
+	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	"github.com/guregu/dynamo"
 	"time"
 )
@@ -20,20 +21,44 @@ type Service struct {
 	DB *database.DB
 }
 
-func (s *Service) lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]schema.Task, error) {
+func getTasksAndMeta(table *dynamo.Table, userPK string) (*[]schema.Task, *schema.Meta, error) {
+	var tasks []schema.Task
 
-	tx := s.DB.DynamoDB.WriteTx()
+	err := table.Get("PK", userPK).
+		Range("SK", dynamo.BeginsWith, "TASK#").
+		Project("Priority", "Title", "CreatedAt", "CompletedAt").
+		Filter("attribute_exists(Priority)").
+		All(&tasks)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var meta schema.Meta
+
+	err = table.Get("PK", userPK).Range("SK", dynamo.Equal, "TASK#meta").One(&meta)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	meta.Percent = transformUtil.GetRecordPercent(meta.InComplete, meta.Complete)
+	return &tasks, &meta, nil
+}
+
+func (s *Service) lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]schema.Task, *schema.MetaSchema, error) {
+	batch := s.DB.CoreTable.Batch("PK", "SK").Write()
+
+	var items []interface{}
 
 	for _, task := range dto.Current.Tasks {
-		base := &schema.TaskSchema{
+		base := schema.TaskSchema{
 			Key:  schema.Key{
 				PK: userPK,
-				SK: database.GetTaskSK(task.Index),
+				SK: database.GetTaskSK(task.Priority),
 			},
 			Task: schema.Task{
 				Todos:            task.Todos,
 				Title:            task.Title,
-				Index:            task.Index,
+				Priority:         task.Priority,
 				Memo:             task.Memo,
 				Where:            task.Where,
 				WillStart:        task.WillStart,
@@ -42,26 +67,33 @@ func (s *Service) lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]
 				CreatedAt:        task.CreatedAt,
 			},
 		}
-		tx = tx.Put(s.DB.CoreTable.Put(base))
+		items = append(items, base)
 	}
 
-	err := tx.Run()
+
+
+	meta := schema.MetaSchema{
+		Key: schema.Key{
+			PK: userPK,
+			SK: "TASK#meta",
+		},
+		Meta: schema.Meta{
+			InComplete: len(dto.Current.Tasks),
+			Complete:   0,
+			LockTime:   dto.LockTime,
+			Percent: 0.0,
+		},
+	}
+	_, err := batch.Put(items...).Put(meta).Run()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &dto.Current.Tasks, nil
+	return &dto.Current.Tasks, &meta, nil
 }
 
-func (s *Service) getCurrentTasks(userPK string) (*[]schema.Task, error) {
-	ret := make([]schema.Task, 0)
-
-	err := s.DB.CoreTable.Get("PK", userPK).Range("SK", dynamo.BeginsWith, "TASK#").All(&ret)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ret, nil
+func (s *Service) getCurrentTasks(userPK string) (*[]schema.Task, *schema.Meta, error) {
+	return getTasksAndMeta(&s.DB.CoreTable, userPK)
 }
 
 func (s *Service) getTaskDetail(userPK string, index int) (*schema.Task, error) {
@@ -76,9 +108,7 @@ func (s *Service) getTaskDetail(userPK string, index int) (*schema.Task, error) 
 }
 
 func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
-	var tasks []schema.Task
-
-	err := s.DB.CoreTable.Get("PK", userPK).Range("SK", dynamo.BeginsWith, "TASK#").All(&tasks)
+	tasks, meta, err := getTasksAndMeta(&s.DB.CoreTable, userPK)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +117,10 @@ func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
 
 	record := schema.Record{
 		Score: 0,
-		Tasks: tasks,
+		Tasks: *tasks,
+		Meta: *meta,
 	}
+
 	recordSchema := schema.RecordSchema{
 		Key:    schema.Key{
 			PK: userPK,
@@ -97,8 +129,8 @@ func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
 		Record: record,
 	}
 
-	for _, task := range tasks {
-		key := dynamo.Keys{userPK, database.GetTaskSK(task.Index)}
+	for _, task := range *tasks {
+		key := dynamo.Keys{userPK, database.GetTaskSK(task.Priority)}
 
 		keys = append(keys, key)
 	}

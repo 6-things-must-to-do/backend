@@ -15,22 +15,34 @@ type controllerInterface interface {
 	getTaskDetail(c *gin.Context)
 	lockCurrentTasks(c *gin.Context)
 	clearCurrentTasks(c *gin.Context)
+	updateTaskStatus(c *gin.Context)
 }
 
 type controller struct {
 	service *Service
 }
 
+func (tc *controller) updateTaskStatus(c *gin.Context) {
+	var dto UpdateTaskStatusDTO
+	err := c.ShouldBind(&dto)
+	if err != nil {
+		shared.FormError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, dto)
+}
+
 func (tc *controller) getCurrentTasks(c *gin.Context) {
 	profile := middlewares.GetUserProfile(c)
 
-	ret, err := tc.service.getCurrentTasks(profile.PK)
+	tasks, meta, err := tc.service.getCurrentTasks(profile.PK)
 	if err != nil {
 		shared.BadRequestError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, ret)
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "meta": meta})
 }
 
 func (tc *controller) getTaskDetail(c *gin.Context) {
@@ -49,7 +61,6 @@ func (tc *controller) getTaskDetail(c *gin.Context) {
 }
 
 func (tc *controller) lockCurrentTasks(c *gin.Context) {
-	// 현재 상태를 최종으로 저장해둔다.
 	var dto LockCurrentTasksDTO
 	err := c.ShouldBind(&dto)
 	if err != nil {
@@ -59,13 +70,13 @@ func (tc *controller) lockCurrentTasks(c *gin.Context) {
 
 	profile := middlewares.GetUserProfile(c)
 
-	ret, err := tc.service.lockCurrentTasks(profile.PK, &dto)
+	tasks, meta, err := tc.service.lockCurrentTasks(profile.PK, &dto)
 	if err != nil {
 		shared.BadRequestError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, ret)
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "meta": meta})
 }
 
 func (tc *controller) clearCurrentTasks(c *gin.Context) {
@@ -90,4 +101,5 @@ func initController(c *gin.RouterGroup, service *Service) {
 	c.POST("", tc.lockCurrentTasks)
 	c.DELETE("", tc.clearCurrentTasks)
 	c.GET("/:index", tc.getTaskDetail)
+	c.PUT("/:index", tc.updateTaskStatus)
 }
