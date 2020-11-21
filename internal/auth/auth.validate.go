@@ -8,7 +8,7 @@ import (
 
 func loginFormValidator(form *loginDto) error {
 	// Check available
-	available := []string{"google", "apple"}
+	available := []interface{}{"google", "apple"}
 	isIncluded := sliceUtil.Includes(available, form.Provider)
 	if !isIncluded {
 		return errors.New("unsupported provider")

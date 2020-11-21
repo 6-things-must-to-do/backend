@@ -1,10 +1,27 @@
 package database
 
 import (
+	"errors"
 	"fmt"
+	sliceUtil "github.com/6-things-must-to-do/server/internal/shared/utils/slice"
 	"github.com/gofrs/uuid"
 	"strings"
 )
+
+func GetOpenSK(openType string, code int) string {
+	availableCode := []interface{}{1, 2, 3}
+	availableType := []interface{}{"ACCOUNT", "RECORD", "TASK"}
+	if !sliceUtil.Includes(availableCode, code) {
+		panic(errors.New("invalid open code"))
+	}
+
+	if !sliceUtil.Includes(availableType, openType) {
+		panic(errors.New("invalid open type"))
+	}
+
+	ret := fmt.Sprintf("OPEN#%s#%d",openType, code)
+	return ret
+}
 
 func GetUserPK(uuid uuid.UUID) string {
 	ret := fmt.Sprintf("USER#%s", uuid)

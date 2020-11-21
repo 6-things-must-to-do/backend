@@ -15,6 +15,10 @@ type TaskAlertSetting struct {
 	Offset int `json:"offset" form:"offset" binding:"required"`
 }
 
+type Openness struct {
+	Key
+}
+
 // ProfileWithSetting ...
 type ProfileWithSetting struct {
 	Profile

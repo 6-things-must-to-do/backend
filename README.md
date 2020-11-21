@@ -10,13 +10,15 @@ Golang serverless backend for STMT Application
  
 ## API
 
-### AUTH
-
+### AUTH (Authentication is not required only in this part)
 - [x] Signup & Signin with google login
 
-### USER (Authentication is required)
+### USER
 - [x] Get user info by uuid (My page, Get user)
 - [ ] Remove login user account
+- [ ] Get openness setting
+- [ ] Update openness setting
+- [ ] Search user by email
 - [ ] Follow user by user email
 - [ ] Unfollow user by user email
 
@@ -56,14 +58,14 @@ all in one table
 | USER#uuid | OPEN#RECORD#CODE  |
 | USER#uuid |  OPEN#TASK#CODE   |
 
-> **ACCOUNT OPENNESS (SK)**  
+> **ACCOUNT OPENNESS (SK)** (default: 1)  
 > | CODE  | SEARCH & BI-FOLLOW | OPEN FOLLOW |
 > | :---: | :----------------: | :---------: |
 > |   0   |         X          |      X      |
 > |   1   |         O          |      X      |
 > |   2   |         O          |      O      |
 
-> **RECORD OPENNESS (SK)**  
+> **RECORD OPENNESS (SK)**  (default: 1)
 > | CODE  | `RANK FRIENDS` CANDIDATE | `RANK ALL` CANDIDATE |
 > | :---: | :----------------------: | :------------------: |
 > |   0   |            X             |          X           |
@@ -71,7 +73,7 @@ all in one table
 > |   2   |            O             |          O           |
 
 
->  **TASK OPENNESS (SK)**  
+>  **TASK OPENNESS (SK)**  (default: 1)
 > | CODE  | FRIENDS |  ALL  |
 > | :---: | :-----: | :---: |
 > |   0   |    X    |   X   |

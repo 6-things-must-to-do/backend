@@ -22,12 +22,12 @@ type service struct {
 }
 
 func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
-	ret := &schema.ProfileSchema{}
+	user := &schema.ProfileSchema{}
 	dtoAppID := database.CreateAppID(p.ID, p.Provider)
 
-	err := s.DB.CoreTable.Get("SK", database.GetProfileSK(p.Email)).Index("Inverted").One(ret)
+	err := s.DB.CoreTable.Get("SK", database.GetProfileSK(p.Email)).Index("Inverted").One(user)
 	if err == nil {
-		ok, err := Compare(ret.AppID, dtoAppID)
+		ok, err := Compare(user.AppID, dtoAppID)
 		if err != nil {
 			return nil, err
 		}
@@ -36,7 +36,7 @@ func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
 			return nil, errors.New("this email was already used with other provider")
 		}
 
-		return ret, nil
+		return user, nil
 	}
 
 	uid, err := uuid.NewV4()
@@ -45,20 +45,40 @@ func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
 	}
 
 	hashed := hashAppID(dtoAppID)
+	userPK := database.GetUserPK(uid)
 
-	ret.Nickname = p.Nickname
-	ret.ProfileImage = p.ProfileImage
-	ret.AppID = hashed
-	ret.Provider = p.Provider
-	ret.PK = database.GetUserPK(uid)
-	ret.SK = database.GetProfileSK(p.Email)
+	user.Nickname = p.Nickname
+	user.ProfileImage = p.ProfileImage
+	user.AppID = hashed
+	user.Provider = p.Provider
+	user.PK = userPK
+	user.SK = database.GetProfileSK(p.Email)
 
-	err = s.DB.CoreTable.Put(ret).Run()
+	accountOpenness := &schema.Openness{Key: schema.Key{
+		PK: userPK,
+		SK: database.GetOpenSK("ACCOUNT", 1),
+	}}
+
+	recordOpenness := &schema.Openness{Key: schema.Key{
+		PK: userPK,
+		SK: database.GetOpenSK("RECORD", 1),
+	}}
+
+	taskOpenness := &schema.Openness{Key: schema.Key{
+		PK: userPK,
+		SK: database.GetOpenSK("TASK", 1),
+	}}
+
+	_, err = s.DB.CoreTable.Batch().
+		Write().
+		Put(user, accountOpenness, recordOpenness, taskOpenness).
+		Run()
+
 	if err != nil {
 		return nil, err
 	}
 
-	return ret, nil
+	return user, nil
 }
 
 func hashAppID(appID string) string {

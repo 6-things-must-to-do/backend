@@ -1,5 +1,8 @@
 .PHONY: clean build deploy
 
+clean:
+	rm -rf ./bin
+
 dev: clean 
 	go build -o bin/dev ./cmd/dev/main.go
 	sudo service stmt restart
@@ -19,9 +22,6 @@ hot:
 
 build: clean
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api cmd/api/main.go
-
-clean:
-	rm -rf ./bin
 
 deploy: build
 	sls deploy --verbose
