@@ -16,7 +16,8 @@ Golang serverless backend for STMT Application
 ### USER
 - [x] Get user info by uuid (My page, Get user)
 - [ ] Remove login user account
-- [ ] Get openness setting
+- [x] Update alarm setting
+- [x] Get openness setting
 - [ ] Update openness setting
 - [ ] Search user by email
 - [ ] Follow user by user email

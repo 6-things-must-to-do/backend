@@ -5,7 +5,6 @@ import (
 
 	"github.com/6-things-must-to-do/server/internal/auth"
 	"github.com/6-things-must-to-do/server/internal/record"
-	"github.com/6-things-must-to-do/server/internal/setting"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/middlewares"
 	"github.com/6-things-must-to-do/server/internal/task"
@@ -40,7 +39,7 @@ func GetAPI() *gin.Engine {
 	authenticated := api.Group("")
 	authenticated.Use(middlewares.AuthRequired())
 
-	userGroup := authenticated.Group("/users")
+	userGroup := authenticated.Group("/user")
 	user.InitModule(userGroup, db)
 
 	taskGroup := authenticated.Group("/tasks")
@@ -48,9 +47,6 @@ func GetAPI() *gin.Engine {
 
 	recordGroup := authenticated.Group("/records")
 	record.InitModule(recordGroup, db)
-
-	settingGroup := authenticated.Group("/settings")
-	setting.InitModule(settingGroup, db)
 
 	return r
 }
