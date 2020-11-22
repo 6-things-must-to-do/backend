@@ -8,16 +8,34 @@ import (
 	"net/http"
 )
 
-func (sc *controller) getFriendList(c *gin.Context) {
-	//
-}
-
 func (sc *controller) getFriendDashboard(c *gin.Context) {
 	//
 }
 
 func (sc *controller) getLeaderboard(c *gin.Context) {
 	//
+}
+
+func (sc *controller) getFollowerList(c *gin.Context) {
+	profile := middlewares.GetUserProfile(c)
+	follower, err := sc.service.getFollowerList(profile.SK)
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"follower": follower, "count": len(*follower)})
+}
+
+func (sc* controller) getFollowingList(c *gin.Context) {
+	profile := middlewares.GetUserProfile(c)
+	following, err := sc.service.getFollowingList(profile.PK)
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"following": following, "count": len(*following)})
 }
 
 func (sc *controller) getUser(c *gin.Context) {
@@ -44,7 +62,7 @@ func (sc *controller) follow(c *gin.Context) {
 	}
 
 	profile := middlewares.GetUserProfile(c)
-	err := sc.service.follow(profile.PK, email)
+	err := sc.service.follow(profile.PK, profile.SK, email)
 
 	if err != nil {
 		shared.BadRequestError(c, err.Error())
@@ -64,7 +82,8 @@ type controllerInterface interface {
 	follow(c *gin.Context)
 	unfollow(c *gin.Context)
 
-	getFriendList(c *gin.Context)
+	getFollowerList(c *gin.Context)
+	getFollowingList(c *gin.Context)
 	getFriendDashboard(c *gin.Context)
 	getLeaderboard(c *gin.Context)
 }
@@ -85,8 +104,8 @@ func initController(r *gin.RouterGroup, service *service) {
 	r.POST("/users/:email", c.follow)
 	r.DELETE("/users/:email", c.unfollow)
 
-	r.GET("/friends", c.getFriendList)
-	r.GET("/friends/:uuid", c.getFriendDashboard)
+	r.GET("/following", c.getFollowingList)
+	r.GET("/followers", c.getFollowerList)
 
 	r.GET("/leaderboard", c.getLeaderboard)
 }

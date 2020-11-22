@@ -104,9 +104,9 @@ User get only 6 tasks row
 
 ### Follow
 
-|      PK       |      SK       |
-| :-----------: | :-----------: |
-| FOLLOWER#uuid | PROFILE#email |
+|      PK       |      SK       | UUID  |
+| :-----------: | :-----------: | :---: |
+| FOLLOWER#uuid | PROFILE#email | uuid  |
 
 ---
 

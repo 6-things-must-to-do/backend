@@ -4,11 +4,119 @@ import (
 	"errors"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
+	"github.com/6-things-must-to-do/server/internal/user"
 	"github.com/guregu/dynamo"
 )
 
 type service struct {
 	DB *database.DB
+}
+
+func schemaToProfile(schemaList *[]schema.ProfileSchema) *[]user.Profile {
+	var list []user.Profile
+	for _, sc := range *schemaList {
+		profile := user.Profile{
+			Email:        database.GetEmailFromSK(sc.SK),
+			UUID:         database.GetUUIDFromPK(sc.PK),
+			ProfileImage: sc.ProfileImage,
+			Nickname:     sc.Nickname,
+		}
+
+		list = append(list, profile)
+	}
+	return &list
+}
+
+func getReadableFollowingList(list *[]schema.Follow) *[]schema.Follow {
+	var ret []schema.Follow
+	for _, follow := range *list {
+		item := schema.Follow{
+			SK:   database.GetEmailFromSK(follow.SK),
+			ProfileUUID: follow.ProfileUUID,
+		}
+		ret = append(ret, item)
+	}
+
+	return &ret
+}
+
+func (s *service) getFollowingList(userPK string) (*[]user.Profile, error) {
+	uuid := database.GetUUIDFromPK(userPK)
+	var followingSchema []schema.Follow
+	err := s.DB.CoreTable.
+		Get("PK", database.FollowFactory(uuid)).
+		Range("SK", dynamo.BeginsWith, "PROFILE#").
+		All(&followingSchema)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]user.Profile, 0)
+	if len(followingSchema) == 0 {
+		return &list, nil
+	}
+
+	var items []dynamo.Keyed
+
+	for _, sc := range followingSchema {
+		item := dynamo.Keys{database.GetUserPK(sc.ProfileUUID), sc.SK}
+		items = append(items, item)
+	}
+
+	var followingProfileList []schema.ProfileSchema
+
+	err = s.DB.CoreTable.
+		Batch("PK", "SK").
+		Get(items...).
+		All(&followingProfileList)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list = *schemaToProfile(&followingProfileList)
+	return &list, nil
+}
+
+func (s *service) getFollowerList (profileSK string) (*[]user.Profile, error) {
+	var followerSchema []schema.Follow
+
+	err := s.DB.CoreTable.
+		Get("SK", profileSK).
+		Range("PK", dynamo.BeginsWith, "FOLLOWER#").
+		Index("Inverted").
+		All(&followerSchema)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]user.Profile, 0)
+	if len(followerSchema) == 0 {
+		return &list, nil
+	}
+
+	var items []dynamo.Keyed
+
+	for _, sc := range followerSchema {
+		item := dynamo.Keys{
+			database.GetUserPKFromFollowerPK(sc.PK),
+			database.GetProfileSK(sc.FollowerEmail),
+		}
+		items = append(items, item)
+	}
+
+	var followerProfileList []schema.ProfileSchema
+	err = s.DB.CoreTable.
+		Batch("PK", "SK").
+		Get(items...).
+		All(&followerProfileList)
+	if err != nil {
+		return nil, err
+	}
+
+	list = *schemaToProfile(&followerProfileList)
+
+	return &list, nil
 }
 
 func getTargetProfileSchema(table *dynamo.Table, email string) (*schema.ProfileSchema, error) {
@@ -42,7 +150,7 @@ func getAccountOpennessCode(table *dynamo.Table, userPK string) (int, error) {
 	return code, nil
 }
 
-func (s *service) follow(userPK, targetEmail string) error {
+func (s *service) follow(userPK, profileSK string, targetEmail string) error {
 	targetProfile, err := getTargetProfileSchema(&s.DB.CoreTable, targetEmail)
 	if err != nil {
 		return err
@@ -68,6 +176,8 @@ func (s *service) follow(userPK, targetEmail string) error {
 		follow := &schema.Follow{
 			PK: database.FollowFactory(uuid),
 			SK: database.GetProfileSK(targetEmail),
+			ProfileUUID: database.GetUUIDFromPK(targetProfile.PK),
+			FollowerEmail: database.GetEmailFromSK(profileSK),
 		}
 		err = s.DB.CoreTable.Put(follow).Run()
 	}

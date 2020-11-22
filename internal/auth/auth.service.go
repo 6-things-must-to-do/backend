@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"github.com/guregu/dynamo"
 
 	"github.com/6-things-must-to-do/server/internal/shared/configs"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
@@ -11,11 +12,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type serviceInterface interface {
-	getOrCreateUser(p *loginDto) (*schema.ProfileWithSetting, error)
-	getJwtToken(pk string) string
-}
-
 type service struct {
 	DB *database.DB
 }
@@ -24,7 +20,12 @@ func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
 	user := &schema.ProfileSchema{}
 	dtoAppID := database.CreateAppID(p.ID, p.Provider)
 
-	err := s.DB.CoreTable.Get("SK", database.GetProfileSK(p.Email)).Index("Inverted").One(user)
+	err := s.DB.CoreTable.
+		Get("SK", database.GetProfileSK(p.Email)).
+		Range("PK", dynamo.BeginsWith, "USER#").
+		Index("Inverted").
+		One(user)
+
 	if err == nil {
 		ok, err := Compare(user.AppID, dtoAppID)
 		if err != nil {

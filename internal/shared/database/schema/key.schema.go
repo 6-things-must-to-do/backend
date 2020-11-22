@@ -11,11 +11,6 @@ type Openness struct {
 	SK string	`json:"-"`
 }
 
-type Follow struct {
-	PK string `json:"follower"`
-	SK string `json:"followee"`
-}
-
 type Request struct {
 	PK string `json:"-"` // REQ#TYPE#~
 	SK string `json:"email"`
