@@ -27,19 +27,6 @@ func schemaToProfile(schemaList *[]schema.ProfileSchema) *[]user.Profile {
 	return &list
 }
 
-func getReadableFollowingList(list *[]schema.Follow) *[]schema.Follow {
-	var ret []schema.Follow
-	for _, follow := range *list {
-		item := schema.Follow{
-			SK:   database.GetEmailFromSK(follow.SK),
-			ProfileUUID: follow.ProfileUUID,
-		}
-		ret = append(ret, item)
-	}
-
-	return &ret
-}
-
 func (s *service) getFollowingList(userPK string) (*[]user.Profile, error) {
 	uuid := database.GetUUIDFromPK(userPK)
 	var followingSchema []schema.Follow
@@ -148,6 +135,12 @@ func getAccountOpennessCode(table *dynamo.Table, userPK string) (int, error) {
 	code := database.GetCode(accountOpenness.SK)
 
 	return code, nil
+}
+
+func (s *service) unfollow(userPK string, targetEmail string) error {
+	return s.DB.CoreTable.
+		Delete("PK", database.GetFollowerPKFromUserPK(userPK)).
+		Range("SK", database.GetProfileSK(targetEmail)).Run()
 }
 
 func (s *service) follow(userPK, profileSK string, targetEmail string) error {

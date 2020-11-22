@@ -14,6 +14,11 @@ func GetUserPKFromFollowerPK(followerPK string) string {
 	return GetUserPK(uuid)
 }
 
+func GetFollowerPKFromUserPK (userPK string) string {
+	uuid := GetUUIDFromPK(userPK)
+	return FollowFactory(uuid)
+}
+
 func FollowFactory(uuid string) string {
 	return fmt.Sprintf("FOLLOWER#%s", uuid)
 }

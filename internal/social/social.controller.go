@@ -73,7 +73,20 @@ func (sc *controller) follow(c *gin.Context) {
 }
 
 func (sc *controller) unfollow(c *gin.Context) {
-	//
+	email := c.Param("email")
+	if !validateUtil.IsEmail(email) {
+		shared.FormError(c, "invalid email")
+	}
+
+	profile := middlewares.GetUserProfile(c)
+
+	err := sc.service.unfollow(profile.PK, email)
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
 
 type controllerInterface interface {
@@ -81,9 +94,9 @@ type controllerInterface interface {
 	getUser(c *gin.Context)
 	follow(c *gin.Context)
 	unfollow(c *gin.Context)
-
 	getFollowerList(c *gin.Context)
 	getFollowingList(c *gin.Context)
+
 	getFriendDashboard(c *gin.Context)
 	getLeaderboard(c *gin.Context)
 }
