@@ -19,9 +19,15 @@ Golang serverless backend for STMT Application
 - [x] Update alarm setting
 - [x] Get openness setting
 - [ ] Update openness setting
+
+### SOCIAL
 - [x] Search user by email
-- [ ] Follow user by user email
-- [ ] Unfollow user by user email
+- [x] Follow user by user email
+- [x] Unfollow user by user email
+- [ ] Following user ranking
+- [ ] All opened user ranking
+- [ ] Get following user's dashboard data
+- [ ] Get opened user's dashboard data
 
 ### TASK
 - [x] Lock user's current task list (create current task list)
@@ -96,17 +102,17 @@ User get only 6 tasks row
 
 #### Record
 
-|    PK     |          SK          |     Tasks     | Score |                                     Meta                                      |
-| :-------: | :------------------: | :-----------: | :---: | :---------------------------------------------------------------------------: |
-| USER#uuid | RECORD#locktimestamp | `Array<Task>` | 33.33 | {"inComplete": 1, "complete": 3, "percent": 33.33, "lockTime": 1604043257363} |
+|    PK     |                       SK                        | LockTime  |     Tasks     | Score | InComplete | Complete | Percent | Duration  |
+| :-------: | :---------------------------------------------: | :-------: | :-----------: | :---: | :--------: | :------: | :-----: | :-------: |
+| USER#uuid | RECORD#YYYY#MM#WeekOfYear#DayOfYear#hh:mm:ss:ns | timestamp | `Array<Task>` | 33.33 |     1      |    2     |  33.33  | timestamp |
 
 ---
 
 ### Follow
 
-|      PK       |      SK       | UUID  |
-| :-----------: | :-----------: | :---: |
-| FOLLOWER#uuid | PROFILE#email | uuid  |
+|      PK       |      SK       | ProfileUUID | FollowerEmail |
+| :-----------: | :-----------: | :---------: | :-----------: |
+| FOLLOWER#uuid | PROFILE#email |    uuid     |     email     |
 
 ---
 
