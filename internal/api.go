@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/6-things-must-to-do/server/internal/social"
 	"os"
 
 	"github.com/6-things-must-to-do/server/internal/auth"
@@ -41,6 +42,9 @@ func GetAPI() *gin.Engine {
 
 	userGroup := authenticated.Group("/user")
 	user.InitModule(userGroup, db)
+
+	socialGroup := authenticated.Group("/social")
+	social.InitModule(socialGroup, db)
 
 	taskGroup := authenticated.Group("/tasks")
 	task.InitModule(taskGroup, db)

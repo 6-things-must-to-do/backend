@@ -10,11 +10,10 @@ import (
 )
 
 type controllerInterface interface {
-	// GET
-	remove(c *gin.Context)
-	myPage(c *gin.Context)
-	getOpenness(c *gin.Context)
-	taskAlert(c *gin.Context)
+	remove(c *gin.Context) // 유저 삭제
+	myPage(c *gin.Context) // 유저 정보 가져오기
+	getOpenness(c *gin.Context) // 공개 범위 설정 상태
+	taskAlert(c *gin.Context) // 알람 관련 설정
 	//getSetting(c *gin.Context)
 	//getMyProfile(c *gin.Context)
 	//

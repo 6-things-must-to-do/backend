@@ -7,7 +7,6 @@ type Profile struct {
 	UUID             string                  `json:"uuid"`
 	ProfileImage     string                  `json:"profileImage,omitempty"`
 	Nickname         string                  `json:"nickname"`
-	TaskAlertSetting schema.TaskAlertSetting `json:"taskAlertSetting,omitempty"`
 }
 
 type Openness struct {

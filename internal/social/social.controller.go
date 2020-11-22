@@ -1,52 +1,92 @@
 package social
 
 import (
+	"github.com/6-things-must-to-do/server/internal/shared"
+	"github.com/6-things-must-to-do/server/internal/shared/middlewares"
+	validateUtil "github.com/6-things-must-to-do/server/internal/shared/utils/validate"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-type socialRouterInterface interface {
-	// GET
+func (sc *controller) getFriendList(c *gin.Context) {
+	//
+}
+
+func (sc *controller) getFriendDashboard(c *gin.Context) {
+	//
+}
+
+func (sc *controller) getLeaderboard(c *gin.Context) {
+	//
+}
+
+func (sc *controller) getUser(c *gin.Context) {
+	email := c.Param("email")
+	if !validateUtil.IsEmail(email) {
+		shared.FormError(c, "invalid email")
+		return
+	}
+
+	ret, err := sc.service.getUser(email)
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, ret)
+}
+
+func (sc *controller) follow(c *gin.Context) {
+	email := c.Param("email")
+	if !validateUtil.IsEmail(email) {
+		shared.FormError(c, "invalid email")
+		return
+	}
+
+	profile := middlewares.GetUserProfile(c)
+	err := sc.service.follow(profile.PK, email)
+
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
+}
+
+func (sc *controller) unfollow(c *gin.Context) {
+	//
+}
+
+type controllerInterface interface {
+
+	getUser(c *gin.Context)
+	follow(c *gin.Context)
+	unfollow(c *gin.Context)
+
 	getFriendList(c *gin.Context)
 	getFriendDashboard(c *gin.Context)
 	getLeaderboard(c *gin.Context)
-	// POST
-	addFriend(c *gin.Context)
-	// DELETE
-	removeFriend(c *gin.Context)
 }
 
-type socialRouter struct{}
-
-func (r *socialRouter) getFriendList(c *gin.Context) {
-	//
+type controller struct {
+	service *service
 }
 
-func (r *socialRouter) getFriendDashboard(c *gin.Context) {
-	//
+
+func newController(service *service) controllerInterface {
+	return &controller{service: service}
 }
 
-func (r *socialRouter) addFriend(c *gin.Context) {
-	//
-}
+func initController(r *gin.RouterGroup, service *service) {
+	c := newController(service)
 
-func (r *socialRouter) removeFriend(c *gin.Context) {
-	//
-}
+	r.GET("/users/:email", c.getUser)
+	r.POST("/users/:email", c.follow)
+	r.DELETE("/users/:email", c.unfollow)
 
-func (r *socialRouter) getLeaderboard(c *gin.Context) {
-	//
-}
+	r.GET("/friends", c.getFriendList)
+	r.GET("/friends/:uuid", c.getFriendDashboard)
 
-func newController() socialRouterInterface {
-	return new(socialRouter)
-}
-
-func initController(router *gin.RouterGroup) {
-	r := newController()
-
-	router.GET("/friends", r.getFriendList)
-	router.POST("/friends", r.addFriend)
-	router.GET("/friends/:username", r.getFriendDashboard)
-	router.DELETE("/friends/:username", r.addFriend)
-	router.GET("/leaderboard", r.getLeaderboard)
+	r.GET("/leaderboard", c.getLeaderboard)
 }

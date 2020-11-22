@@ -2,10 +2,10 @@ package schema
 
 // Profile ...
 type Profile struct {
-	Provider     string // google | apple
+	Provider     string `json:"-"`// google | apple
 	AppID        string `json:"-"` // hashedAppId
-	ProfileImage string // Image URL
-	Nickname     string
+	ProfileImage string `json:"profileImage"`// Image URL
+	Nickname     string	`json:"nickname"`
 }
 
 // TaskAlertSetting ...
@@ -15,8 +15,10 @@ type TaskAlertSetting struct {
 	Offset int `json:"offset" form:"offset" binding:"required"`
 }
 
-type Openness struct {
-	Key
+type OpennessCollection struct {
+	Account int `json:"account"`
+	Task int `json:"task"`
+	Record int `json:"record"`
 }
 
 // ProfileWithSetting ...
@@ -26,7 +28,12 @@ type ProfileWithSetting struct {
 }
 
 // ProfileSchema ...
-type ProfileSchema struct {
+type ProfileSchemaWithSetting struct {
 	Key // USER#uuid PROFILE#email
 	ProfileWithSetting
+}
+
+type ProfileSchema struct {
+	Key
+	Profile
 }

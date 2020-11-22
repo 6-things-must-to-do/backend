@@ -10,13 +10,20 @@ import (
 	"github.com/guregu/dynamo"
 )
 
+type service struct {
+	DB *database.DB
+}
+
+func newService(DB *database.DB) *service {
+	return &service{DB: DB}
+}
+
 func transformUserProfileFromProfileSchema(p *schema.ProfileSchema) *Profile {
 	profile := &Profile{
 		Email:            database.GetEmailFromSK(p.SK),
 		UUID:             database.GetUUIDFromPK(p.PK),
 		ProfileImage:     p.ProfileImage,
 		Nickname:         p.Nickname,
-		TaskAlertSetting: p.TaskAlertSetting,
 	}
 
 	return profile
@@ -34,7 +41,7 @@ func getPermissionStatus(opennessList *[]schema.Openness) *map[string]int {
 }
 
 func (s *service) removeUser (userPK string) error {
-	// TODO 에러 있음
+	// TODO 에러
 	return s.DB.CoreTable.Delete("PK", userPK).Run()
 }
 
@@ -70,12 +77,4 @@ func (s *service) getUserProfile(pk string) (*Profile, error) {
 	up := transformUserProfileFromProfileSchema(profile)
 
 	return up, nil
-}
-
-type service struct {
-	DB *database.DB
-}
-
-func newService(DB *database.DB) *service {
-	return &service{DB: DB}
 }

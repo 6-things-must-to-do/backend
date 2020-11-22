@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/6-things-must-to-do/server/internal/shared/configs"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
@@ -54,20 +53,20 @@ func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
 	user.PK = userPK
 	user.SK = database.GetProfileSK(p.Email)
 
-	accountOpenness := &schema.Openness{Key: schema.Key{
+	accountOpenness := &schema.Openness{
 		PK: userPK,
-		SK: database.GetOpenSK("ACCOUNT", 1),
-	}}
+		SK: database.OpenSKFactory("ACCOUNT", 2),
+	}
 
-	recordOpenness := &schema.Openness{Key: schema.Key{
+	recordOpenness := &schema.Openness{
 		PK: userPK,
-		SK: database.GetOpenSK("RECORD", 1),
-	}}
+		SK: database.OpenSKFactory("RECORD", 2),
+	}
 
-	taskOpenness := &schema.Openness{Key: schema.Key{
+	taskOpenness := &schema.Openness{
 		PK: userPK,
-		SK: database.GetOpenSK("TASK", 1),
-	}}
+		SK: database.OpenSKFactory("TASK", 2),
+	}
 
 	_, err = s.DB.CoreTable.Batch().
 		Write().
@@ -82,10 +81,8 @@ func (s *service) getOrCreateUser(p *loginDto) (*schema.ProfileSchema, error) {
 }
 
 func hashAppID(appID string) string {
-	fmt.Println(appID)
 	bytes := []byte(appID)
 	hash, err := bcrypt.GenerateFromPassword(bytes, bcrypt.MinCost)
-	fmt.Println(string(hash))
 	if err != nil {
 		panic(err)
 	}

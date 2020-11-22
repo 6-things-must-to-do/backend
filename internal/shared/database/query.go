@@ -3,12 +3,46 @@ package database
 import (
 	"errors"
 	"fmt"
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	sliceUtil "github.com/6-things-must-to-do/server/internal/shared/utils/slice"
+	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	"github.com/gofrs/uuid"
 	"strings"
 )
 
-func GetOpenSK(openType string, code int) string {
+func FollowFactory(uuid string) string {
+	return fmt.Sprintf("FOLLOWER#%s", uuid)
+}
+
+func RequestFactory(uuid string) string {
+	return fmt.Sprintf("REQ#FOLLOW#%s", uuid)
+}
+
+func GetCode(openSK string) int {
+	code := strings.Split(openSK, "#")[2]
+	return transformUtil.ToInt(code)
+}
+
+func GetOpennessCollection(opennessList *[]schema.Openness) *schema.OpennessCollection {
+	opennessCollection := &schema.OpennessCollection{}
+	for _, openness := range *opennessList {
+		data := strings.Split(openness.SK, "#")
+		opennessType := data[1]
+		opennessCode := transformUtil.ToInt(data[2])
+		switch opennessType {
+		case "ACCOUNT":
+			opennessCollection.Account = opennessCode
+		case "TASK":
+			opennessCollection.Task = opennessCode
+		case "RECORD":
+			opennessCollection.Record = opennessCode
+		}
+	}
+
+	return opennessCollection
+}
+
+func OpenSKFactory(openType string, code int) string {
 	availableCode := []interface{}{1, 2, 3}
 	availableType := []interface{}{"ACCOUNT", "RECORD", "TASK"}
 	if !sliceUtil.Includes(availableCode, code) {

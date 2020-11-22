@@ -19,7 +19,7 @@ Golang serverless backend for STMT Application
 - [x] Update alarm setting
 - [x] Get openness setting
 - [ ] Update openness setting
-- [ ] Search user by email
+- [x] Search user by email
 - [ ] Follow user by user email
 - [ ] Unfollow user by user email
 
@@ -59,14 +59,14 @@ all in one table
 | USER#uuid | OPEN#RECORD#CODE  |
 | USER#uuid |  OPEN#TASK#CODE   |
 
-> **ACCOUNT OPENNESS (SK)** (default: 1)  
-> | CODE  | SEARCH & BI-FOLLOW | OPEN FOLLOW |
-> | :---: | :----------------: | :---------: |
-> |   0   |         X          |      X      |
-> |   1   |         O          |      X      |
-> |   2   |         O          |      O      |
+>  **ACCOUNT OPENNESS (SK)** (default: 2)  
+> | CODE  | SEARCH & FOLLOW REQUEST | OPEN FOLLOW |
+> | :---: | :---------------------: | :---------: |
+> |   0   |            X            |      X      |
+> |   1   |            O            |      X      |
+> |   2   |            O            |      O      |
 
-> **RECORD OPENNESS (SK)**  (default: 1)
+> **RECORD OPENNESS (SK)**  (default: 2)
 > | CODE  | `RANK FRIENDS` CANDIDATE | `RANK ALL` CANDIDATE |
 > | :---: | :----------------------: | :------------------: |
 > |   0   |            X             |          X           |
@@ -74,7 +74,7 @@ all in one table
 > |   2   |            O             |          O           |
 
 
->  **TASK OPENNESS (SK)**  (default: 1)
+>  **TASK OPENNESS (SK)**  (default: 2)
 > | CODE  | FRIENDS |  ALL  |
 > | :---: | :-----: | :---: |
 > |   0   |    X    |   X   |
@@ -87,18 +87,18 @@ all in one table
 
 User get only 6 tasks row
 
-|    PK     |     SK     |                    todo                    |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
-| :-------: | :--------: | :----------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
-| USER#uuid | TASK#index | [{"content": "todo", "isCompleted":false}] |            |              |
-| USER#uuid | TASK#index |                     []                     | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
+|    PK     |     SK     |                                  todo                                  |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
+| :-------: | :--------: | :--------------------------------------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |
+| USER#uuid | TASK#index |                                   []                                   |            |              |               |                  |               | 1604343057363 |
+| USER#uuid | TASK#index | [{"content": "todo", "isCompleted":false, "createdAt": 1604343257363}] | MemoString | hanyang univ | 1604343297363 |       300        | 1604343441719 | 1604343257363 |
 
 ---
 
 #### Record
 
-|    PK     |        SK        |     tasks     |
-| :-------: | :--------------: | :-----------: |
-| USER#uuid | RECORD#timestamp | `Array<Task>` |
+|    PK     |          SK          |     Tasks     | Score |                                     Meta                                      |
+| :-------: | :------------------: | :-----------: | :---: | :---------------------------------------------------------------------------: |
+| USER#uuid | RECORD#locktimestamp | `Array<Task>` | 33.33 | {"inComplete": 1, "complete": 3, "percent": 33.33, "lockTime": 1604043257363} |
 
 ---
 
