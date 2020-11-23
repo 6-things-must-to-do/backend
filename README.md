@@ -25,7 +25,7 @@ Golang serverless backend for STMT Application
 - [x] Follow user by user email
 - [x] Unfollow user by user email
 - [ ] Following user ranking
-- [ ] All opened user ranking
+- [x] All opened user ranking
 - [ ] Get following user's dashboard data
 - [ ] Get opened user's dashboard data
 
@@ -36,7 +36,8 @@ Golang serverless backend for STMT Application
 - [ ] Update progress of current tasks (ex. Check the task complete)
 
 ### Record
-- [ ] Get login user's dashboard data
+- [x] Get login user's dashboard data
+- [x] Get login user's detail of dashboard record
 - [ ] Get other user's a week's amount of record by specific date and user email (only if the user has given permission)
 
 ## AWS DynamoDB Core Table
@@ -102,9 +103,9 @@ User get only 6 tasks row
 
 #### Record
 
-|    PK     |                       SK                        | LockTime  |     Tasks     | Score | InComplete | Complete | Percent | Duration  |
-| :-------: | :---------------------------------------------: | :-------: | :-----------: | :---: | :--------: | :------: | :-----: | :-------: |
-| USER#uuid | RECORD#YYYY#MM#WeekOfYear#DayOfYear#hh:mm:ss:ns | timestamp | `Array<Task>` | 33.33 |     1      |    2     |  33.33  | timestamp |
+|    PK     |                 SK                  | LockTime  |     Tasks     | Score | InComplete | Complete | Percent | Duration  | RecordOpenness | Nickname |
+| :-------: | :---------------------------------: | :-------: | :-----------: | :---: | :--------: | :------: | :-----: | :-------: | :------------: | :------: |
+| USER#uuid | RECORD#YYYY#MM#WeekOfYear#DayOfYear | timestamp | `Array<Task>` | 33.33 |     1      |    2     |  33.33  | timestamp |       2        |  string  |
 
 ---
 

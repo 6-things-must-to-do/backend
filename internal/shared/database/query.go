@@ -7,7 +7,44 @@ import (
 	sliceUtil "github.com/6-things-must-to-do/server/internal/shared/utils/slice"
 	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	"strings"
+	"time"
 )
+
+func GetTimeComponentForRecordSK(t time.Time) (year, month, weekOfYear, dayOfYear int) {
+	month = int(t.Month())
+	year, weekOfYear = t.ISOWeek()
+	dayOfYear = t.YearDay()
+	return
+}
+
+func GetDateForRecordSKFromJSUnixTimestamp(jsUnixTimestamp int64) []int {
+	t := transformUtil.GetTimeFromJSUnixTimestamp(jsUnixTimestamp)
+	year, month, weekOfYear, dayOfYear := GetTimeComponentForRecordSK(t)
+	return []int{year, int(month), weekOfYear, dayOfYear}
+}
+
+func RecordSKFactoryByJSTimestamp(unix int64, scope string) string {
+	date := GetDateForRecordSKFromJSUnixTimestamp(unix)
+	ret := "RECORD"
+	intScope := func() int {
+		switch scope {
+		case "day":
+			return 4
+		case "week":
+			return 3
+		case "month":
+			return 2
+		default:
+			return 4
+		}
+	}()
+
+	for i := 0; i < intScope; i++ {
+		ret = fmt.Sprintf("%s#%d", ret, date[i])
+	}
+
+	return ret
+}
 
 func GetUserPKFromFollowerPK(followerPK string) string {
 	uuid := strings.Split(followerPK, "#")[1]
@@ -72,7 +109,13 @@ func GetUserPK(uuid interface{}) string {
 }
 
 func GetRecordSK(lockTime int64) string {
-	ret := fmt.Sprintf("RECORD#%d", lockTime)
+	ts := transformUtil.ToUnixTimestamp(lockTime)
+	t := time.Unix(ts, 0)
+	month := t.Month()
+	year, weekOfYear := t.ISOWeek()
+	dayOfYear := t.YearDay()
+	fmt.Print(dayOfYear)
+	ret := fmt.Sprintf("RECORD#%d#%d#%d#%d", year, int(month), weekOfYear, dayOfYear)
 	return ret
 }
 

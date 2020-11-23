@@ -82,7 +82,7 @@ func (tc *controller) lockCurrentTasks(c *gin.Context) {
 func (tc *controller) clearCurrentTasks(c *gin.Context) {
 	profile := middlewares.GetUserProfile(c)
 
-	ret, err := tc.service.clearCurrentTasks(profile.PK)
+	ret, err := tc.service.clearCurrentTasks(profile.PK, profile.Nickname)
 	if err != nil {
 		shared.BadRequestError(c, err.Error())
 		return

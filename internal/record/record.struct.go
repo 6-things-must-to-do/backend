@@ -1,12 +1,11 @@
 package record
 
-import (
-	"time"
-
-	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
-)
-
-type createRecordDto struct {
-	Tasks []schema.Task `json:"tasks" form:"tasks" binding:"required"`
-	Date  time.Time     `json:"date" form:"date" binding:"required"`
+type Meta struct {
+	Year int `json:"year"`
+	Month int `json:"month"`
+	Day int `json:"day"`
+	DayOfYear int `json:"dayOfYear"`
+	Score float64 `json:"score"`
+	Percent float64 `json:"percent"`
+	LockTime int64	`json:"lockTime"`
 }

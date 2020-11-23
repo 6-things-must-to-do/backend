@@ -2,7 +2,10 @@ package social
 
 import (
 	"github.com/6-things-must-to-do/server/internal/shared"
+	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	"github.com/6-things-must-to-do/server/internal/shared/middlewares"
+	sliceUtil "github.com/6-things-must-to-do/server/internal/shared/utils/slice"
+	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 	validateUtil "github.com/6-things-must-to-do/server/internal/shared/utils/validate"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -12,8 +15,38 @@ func (sc *controller) getFriendDashboard(c *gin.Context) {
 	//
 }
 
-func (sc *controller) getLeaderboard(c *gin.Context) {
-	//
+func (sc *controller) getAllLeaderboard(c *gin.Context) {
+	mode := c.Query("mode")
+	time := c.Query("time")
+
+	if time == "" {
+		shared.FormError(c, "query must have 'time'")
+		return
+	}
+
+	jsTimestamp := transformUtil.ToInt(time)
+	jsTimestamp64 := int64(jsTimestamp)
+
+
+	availableMode := []interface{}{"month","week", "day", ""}
+	if !sliceUtil.Includes(availableMode, mode) {
+		shared.FormError(c, "invalid mod")
+		return
+	}
+
+	var ret *[]schema.RankRecord
+	var err error
+
+	switch mode {
+	default:
+		ret, err = sc.service.getAllRankingByDay(jsTimestamp64)
+	}
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"records": ret})
 }
 
 func (sc *controller) getFollowerList(c *gin.Context) {
@@ -98,7 +131,7 @@ type controllerInterface interface {
 	getFollowingList(c *gin.Context)
 
 	getFriendDashboard(c *gin.Context)
-	getLeaderboard(c *gin.Context)
+	getAllLeaderboard(c *gin.Context)
 }
 
 type controller struct {
@@ -120,5 +153,5 @@ func initController(r *gin.RouterGroup, service *service) {
 	r.GET("/following", c.getFollowingList)
 	r.GET("/followers", c.getFollowerList)
 
-	r.GET("/leaderboard", c.getLeaderboard)
+	r.GET("/rank/all", c.getAllLeaderboard)
 }

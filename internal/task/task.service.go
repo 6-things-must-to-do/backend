@@ -106,18 +106,41 @@ func (s *Service) getTaskDetail(userPK string, index int) (*schema.Task, error) 
 	return &task, nil
 }
 
-func (s *Service) clearCurrentTasks(userPK string) (*schema.Record, error) {
+func getUserOpenness (table *dynamo.Table, userPK string) (*schema.OpennessCollection, error) {
+	var opennessList []schema.Openness
+	err := table.Get("PK", userPK).Range("SK", dynamo.BeginsWith, "OPEN#").All(&opennessList)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := database.GetOpennessCollection(&opennessList)
+	return ret, nil
+}
+
+func (s *Service) clearCurrentTasks(userPK string, nickname string) (*schema.Record, error) {
 	tasks, meta, err := getTasksAndMeta(&s.DB.CoreTable, userPK)
+	if err != nil {
+		return nil, err
+	}
+
+	openness, err := getUserOpenness(&s.DB.CoreTable, userPK)
 	if err != nil {
 		return nil, err
 	}
 
 	var keys []dynamo.Keyed
 
+
+
 	record := schema.Record{
-		Score: meta.Percent,
-		Tasks: *tasks,
-		Meta: *meta,
+		Tasks:      *tasks,
+		LockTime:   meta.LockTime,
+		Score:      meta.Percent,
+		InComplete: meta.InComplete,
+		Complete:   meta.Complete,
+		RecordOpenness: openness.Record,
+		Nickname:	nickname,
+		Percent:    meta.Percent,
 	}
 
 	recordSchema := schema.RecordSchema{

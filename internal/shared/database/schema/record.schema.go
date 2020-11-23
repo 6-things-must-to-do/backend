@@ -2,9 +2,15 @@ package schema
 
 // Record ...
 type Record struct {
-	Score float64    `json:"score"` // LSI
 	Tasks []Task `json:"tasks" form:"tasks" binding:"required"`
-	Meta  Meta   `json:"meta" dynamo:",set"`
+	LockTime int64 `json:"lockTime"`
+	Score float64    `json:"score"` // LSI
+	InComplete int `json:"inComplete"`
+	Complete int `json:"complete"`
+	Percent float64 `json:"percent"`
+	RecordOpenness int `json:"-"`
+	Nickname string `json:"nickname"`
+	Duration int64 `json:"duration,omitempty"`
 }
 
 // RecordSchema ...

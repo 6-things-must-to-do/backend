@@ -2,14 +2,50 @@ package social
 
 import (
 	"errors"
+	"fmt"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	"github.com/6-things-must-to-do/server/internal/user"
 	"github.com/guregu/dynamo"
+	"sort"
 )
 
 type service struct {
 	DB *database.DB
+}
+
+func (s *service) getAllRankingByDay (timestamp int64) (*[]schema.RankRecord, error) {
+	var records []schema.RecordSchema
+
+	sk := database.RecordSKFactoryByJSTimestamp(timestamp, "day")
+
+	fmt.Println(sk)
+
+	err := s.DB.CoreTable.
+		Get("SK", sk).
+		Range("RecordOpenness", dynamo.Equal, 2).
+		Index("RecordOpenness").
+		All(&records)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := make([]schema.RankRecord, 0)
+
+	for _, rec := range records {
+		rank := schema.RankRecord{
+			RecordSchema: rec,
+			UUID:         database.GetUUIDFromPK(rec.PK),
+		}
+
+		ret = append(ret, rank)
+	}
+
+	sort.Slice(ret, func(i int, j int) bool {
+		return ret[i].Score > ret[j].Score
+	})
+
+	return &ret, nil
 }
 
 func schemaToProfile(schemaList *[]schema.ProfileSchema) *[]user.Profile {

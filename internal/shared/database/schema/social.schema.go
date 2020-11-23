@@ -6,3 +6,8 @@ type Follow struct {
 	ProfileUUID string `json:"uuid"` // target uuid
 	FollowerEmail string `json:"-"` // Follower email
 }
+
+type RankRecord struct {
+	RecordSchema
+	UUID string `json:"uuid"`
+}
