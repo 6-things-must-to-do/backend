@@ -7,35 +7,34 @@ import (
 	"github.com/guregu/dynamo"
 )
 
-// ServiceInterface ...
-type ServiceInterface interface {
-	getCurrentTasks(userPK string) (*[]schema.Task, error)
-	getTaskDetail(userPK string, index int) (*schema.Task, error)
-	lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]schema.Task, error)
-	clearCurrentTasks(userPK string) error
-}
-
 // Service ...
 type Service struct {
 	DB *database.DB
 }
 
-func getTasksAndMeta(table *dynamo.Table, userPK string) (*[]schema.Task, *schema.Meta, error) {
+func (s * Service) completeLockTask(userPK string, priority int, completedAt int64) error {
+	return s.DB.CoreTable.
+		Update("PK", userPK).
+		Range("SK", database.GetTaskSK(priority)).
+		Set("CompletedAt", completedAt).
+		Run()
+}
+
+func getTasksAndMeta(table *dynamo.Table, userPK string, withDetail bool) (*[]schema.Task, *schema.Meta, error) {
 	var tasks []schema.Task
 
-	err := table.Get("PK", userPK).
-		Range("SK", dynamo.BeginsWith, "TASK#").
-		Project("Priority", "Title", "CreatedAt", "CompletedAt").
+	query := table.Get("PK", userPK).
+		Range("SK", dynamo.BeginsWith, "TASK#")
+
+	if !withDetail {
+		query = query.Project("Priority", "Title", "CreatedAt", "CompletedAt")
+	}
+
+	err := query.
 		Filter("attribute_exists(Priority)").
 		All(&tasks)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	for i := range tasks {
-		if tasks[i].Todos == nil {
-			tasks[i].Todos = make([]schema.Todo, 0)
-		}
 	}
 
 	var meta schema.Meta
@@ -98,7 +97,7 @@ func (s *Service) lockCurrentTasks(userPK string, dto *LockCurrentTasksDTO) (*[]
 }
 
 func (s *Service) getCurrentTasks(userPK string) (*[]schema.Task, *schema.Meta, error) {
-	return getTasksAndMeta(&s.DB.CoreTable, userPK)
+	return getTasksAndMeta(&s.DB.CoreTable, userPK, true)
 }
 
 func (s *Service) getTaskDetail(userPK string, index int) (*schema.Task, error) {
@@ -124,7 +123,7 @@ func getUserOpenness (table *dynamo.Table, userPK string) (*schema.OpennessColle
 }
 
 func (s *Service) clearCurrentTasks(userPK string, nickname string) (*schema.Record, error) {
-	tasks, meta, err := getTasksAndMeta(&s.DB.CoreTable, userPK)
+	tasks, meta, err := getTasksAndMeta(&s.DB.CoreTable, userPK, false)
 	if err != nil {
 		return nil, err
 	}

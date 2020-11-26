@@ -1,6 +1,7 @@
 package task
 
 import (
+	sliceUtil "github.com/6-things-must-to-do/server/internal/shared/utils/slice"
 	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
 
 	"net/http"
@@ -15,22 +16,41 @@ type controllerInterface interface {
 	getTaskDetail(c *gin.Context)
 	lockCurrentTasks(c *gin.Context)
 	clearCurrentTasks(c *gin.Context)
-	updateTaskStatus(c *gin.Context)
+	updateLockTask(c *gin.Context)
 }
 
 type controller struct {
 	service *Service
 }
 
-func (tc *controller) updateTaskStatus(c *gin.Context) {
-	var dto UpdateTaskStatusDTO
+func (tc *controller) updateLockTask(c *gin.Context) {
+	p := c.Param("priority")
+	priority := transformUtil.ToInt(p)
+	var dto CompleteLockTask
 	err := c.ShouldBind(&dto)
 	if err != nil {
 		shared.FormError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, dto)
+	t := c.Query("type")
+	if !sliceUtil.Includes([]interface{}{"task", "todo"}, t) {
+		shared.FormError(c, "invalid query 'type'")
+		return
+	}
+
+	profile := middlewares.GetUserProfile(c)
+	switch t {
+	case "task":
+		err = tc.service.completeLockTask(profile.PK, priority, dto.CompletedAt)
+	}
+
+	if err != nil {
+		shared.BadRequestError(c, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
 
 func (tc *controller) getCurrentTasks(c *gin.Context) {
@@ -46,7 +66,7 @@ func (tc *controller) getCurrentTasks(c *gin.Context) {
 }
 
 func (tc *controller) getTaskDetail(c *gin.Context) {
-	rIndex := c.Param("index")
+	rIndex := c.Param("priority")
 	targetIndex := transformUtil.ToInt(rIndex)
 
 	profile := middlewares.GetUserProfile(c)
@@ -100,6 +120,6 @@ func initController(c *gin.RouterGroup, service *Service) {
 	c.GET("", tc.getCurrentTasks)
 	c.POST("", tc.lockCurrentTasks)
 	c.DELETE("", tc.clearCurrentTasks)
-	c.GET("/:index", tc.getTaskDetail)
-	c.PUT("/:index", tc.updateTaskStatus)
+	c.GET("/:priority", tc.getTaskDetail)
+	c.PUT("/:priority", tc.updateLockTask)
 }
