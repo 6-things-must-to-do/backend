@@ -40,6 +40,11 @@ Golang serverless backend for STMT Application
 - [x] Get login user's detail of dashboard record
 - [ ] Get other user's a week's amount of record by specific date and user email (only if the user has given permission)
 
+### NUGU
+- [ ] Register NUGU device
+- [ ] Get ongoing task
+- [ ] Complete current task
+
 ## AWS DynamoDB Core Table
 
 ### Additional Indexes

@@ -32,6 +32,12 @@ func getTasksAndMeta(table *dynamo.Table, userPK string) (*[]schema.Task, *schem
 		return nil, nil, err
 	}
 
+	for i := range tasks {
+		if tasks[i].Todos == nil {
+			tasks[i].Todos = make([]schema.Todo, 0)
+		}
+	}
+
 	var meta schema.Meta
 
 	err = table.Get("PK", userPK).Range("SK", dynamo.Equal, "TASK#meta").One(&meta)
