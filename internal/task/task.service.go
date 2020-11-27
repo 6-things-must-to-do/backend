@@ -123,7 +123,7 @@ func getUserOpenness (table *dynamo.Table, userPK string) (*schema.OpennessColle
 }
 
 func (s *Service) clearCurrentTasks(userPK string, nickname string) (*schema.Record, error) {
-	tasks, meta, err := getTasksAndMeta(&s.DB.CoreTable, userPK, false)
+	tasks, meta, err := getTasksAndMeta(&s.DB.CoreTable, userPK, true)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,7 @@ type Todo struct {
 
 // Task ...
 type Task struct {
-	Todos            []Todo `json:"todos" form:"todos" binding:"required"`
+	Todos            []Todo `json:"todos,omitempty" form:"todos" binding:"required"`
 	Title            string `json:"title" form:"title" binding:"required"`
 	Priority         int    `json:"priority" form:"priority" binding:"gte=0"`
 	Memo             string `json:"memo,omitempty" form:"memo" dynamo:",omitempty"`
