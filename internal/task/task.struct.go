@@ -22,3 +22,7 @@ type LockCurrentTasksDTO struct {
 type CompleteLockTask struct {
 	CompletedAt int64 `json:"completedAt" form:"completedAt" binding:"required"`
 }
+
+type UpdateLockTaskTodo struct {
+	Todo []schema.Todo `json:"todos" form:"todos" binding:"required"`
+}

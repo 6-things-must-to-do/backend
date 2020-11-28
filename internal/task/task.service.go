@@ -12,6 +12,14 @@ type Service struct {
 	DB *database.DB
 }
 
+func (s *Service) updateLockedTaskTodo(userPK string, priority int, todos []schema.Todo) error {
+	return s.DB.CoreTable.
+		Update("PK", userPK).
+		Range("SK", database.GetTaskSK(priority)).
+		Set("Todos", todos).
+		Run()
+}
+
 func (s * Service) completeLockTask(userPK string, priority int, completedAt int64) error {
 	return s.DB.CoreTable.
 		Update("PK", userPK).

@@ -26,12 +26,7 @@ type controller struct {
 func (tc *controller) updateLockTask(c *gin.Context) {
 	p := c.Param("priority")
 	priority := transformUtil.ToInt(p)
-	var dto CompleteLockTask
-	err := c.ShouldBind(&dto)
-	if err != nil {
-		shared.FormError(c, err.Error())
-		return
-	}
+
 
 	t := c.Query("type")
 	if !sliceUtil.Includes([]interface{}{"task", "todo"}, t) {
@@ -39,10 +34,26 @@ func (tc *controller) updateLockTask(c *gin.Context) {
 		return
 	}
 
+	var err error
+
 	profile := middlewares.GetUserProfile(c)
 	switch t {
 	case "task":
+		var dto CompleteLockTask
+		err = c.ShouldBind(&dto)
+		if err != nil {
+			shared.FormError(c, err.Error())
+			return
+		}
 		err = tc.service.completeLockTask(profile.PK, priority, dto.CompletedAt)
+	case "todo":
+		var dto UpdateLockTaskTodo
+		err = c.ShouldBind(&dto)
+		if err != nil {
+			shared.FormError(c, err.Error())
+			return
+		}
+		err = tc.service.updateLockedTaskTodo(profile.PK, priority, dto.Todo)
 	}
 
 	if err != nil {
