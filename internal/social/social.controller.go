@@ -151,7 +151,7 @@ func initController(r *gin.RouterGroup, service *service) {
 	r.DELETE("/users/:email", c.unfollow)
 
 	r.GET("/following", c.getFollowingList)
-	r.GET("/followers", c.getFollowerList)
+	r.GET("/follower", c.getFollowerList)
 
 	r.GET("/rank/all", c.getAllLeaderboard)
 }
