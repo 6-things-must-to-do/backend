@@ -29,28 +29,38 @@ func (rc *controller) getRecordDetail(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, ret)
-
-
 }
 
 func (rc *controller) getDashboardData(c *gin.Context) {
-	t := c.Param("timestamp")
-	timestamp := transformUtil.ToInt(t)
+	y := c.Query("year")
+	m := c.Query("month")
+	d := c.Query("day")
+
+	if y == "" || m == "" || d == "" {
+		shared.FormError(c, "year, month, day query required")
+		return
+	}
+
+	year := transformUtil.ToInt(y)
+	month := transformUtil.ToInt(m)
+	day := transformUtil.ToInt(d)
+
 	profile := middlewares.GetUserProfile(c)
-	ret, err := rc.service.getRecordMetaList(profile.PK, int64(timestamp))
+	ret, err := rc.service.getRecordMetaList(profile.PK, year, month, day)
 	if err != nil {
 		shared.BadRequestError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"dashboard": ret})
+	c.JSON(http.StatusOK, ret)
 }
+
 func newController(service *Service) controllerInterface {
 	return &controller{service: service}
 }
 
 func initController(c *gin.RouterGroup, service *Service) {
 	rc := newController(service)
-	c.GET("/:timestamp", rc.getDashboardData)
+	c.GET("", rc.getDashboardData)
 	c.GET("/:timestamp/detail", rc.getRecordDetail)
 }

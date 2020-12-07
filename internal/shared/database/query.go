@@ -23,6 +23,15 @@ func GetDateForRecordSKFromJSUnixTimestamp(jsUnixTimestamp int64) []int {
 	return []int{year, int(month), weekOfYear, dayOfYear}
 }
 
+func RecordSKFactoryFromYMD(ymd ...int) string {
+	ret := "RECORD"
+	for _, d := range ymd {
+		ret += fmt.Sprintf("#%d", d)
+	}
+
+	return ret
+}
+
 func RecordSKFactoryByJSTimestamp(unix int64, scope string) string {
 	date := GetDateForRecordSKFromJSUnixTimestamp(unix)
 	ret := "RECORD"
