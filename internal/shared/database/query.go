@@ -128,6 +128,10 @@ func GetRecordSK(lockTime int64) string {
 	return ret
 }
 
+func GetTaskMetaSK() string {
+	return "TASK#meta"
+}
+
 func GetTaskSK(index int) string {
 	ret := fmt.Sprintf("TASK#%d", index)
 	return ret

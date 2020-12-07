@@ -21,11 +21,45 @@ func (s *Service) updateLockedTaskTodo(userPK string, priority int, todos []sche
 }
 
 func (s * Service) completeLockTask(userPK string, priority int, completedAt int64) error {
-	return s.DB.CoreTable.
+	var task schema.TaskSchema
+	var meta schema.MetaSchema
+
+	taskQuery := s.DB.CoreTable.
+		Get("PK", userPK).
+		Range("SK", dynamo.Equal, database.GetTaskSK(priority))
+	metaQuery := s.DB.CoreTable.
+		Get("PK", userPK).
+		Range("SK", dynamo.Equal, database.GetTaskMetaSK())
+
+	err := s.DB.DynamoDB.GetTx().GetOne(taskQuery, &task).GetOne(metaQuery, &meta).Run()
+	if err != nil {
+		return err
+	}
+
+	if task.CreatedAt == 0 {
+		return dynamo.ErrNotFound
+	}
+
+	if task.CompletedAt != 0 {
+		return nil
+	}
+
+	meta.InComplete = meta.InComplete - 1
+	meta.Complete = meta.Complete + 1
+
+	updateTask := s.DB.CoreTable.
 		Update("PK", userPK).
 		Range("SK", database.GetTaskSK(priority)).
-		Set("CompletedAt", completedAt).
-		Run()
+		Set("CompletedAt", completedAt)
+
+	updateMeta := s.DB.CoreTable.
+		Update("PK", userPK).
+		Range("SK", database.GetTaskMetaSK()).
+		Set("InComplete", meta.InComplete).
+		Set("Complete", meta.Complete).
+		Set("Percent", transformUtil.GetRecordPercent(meta.InComplete, meta.Complete))
+
+	return s.DB.DynamoDB.WriteTx().Update(updateTask).Update(updateMeta).Run()
 }
 
 func getTasksAndMeta(table *dynamo.Table, userPK string, withDetail bool) (*[]schema.Task, *schema.Meta, error) {
