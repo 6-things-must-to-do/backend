@@ -43,6 +43,8 @@ func (s *Service) getRecordMetaList(userPK string, year int, month int, day int)
 			Day: dayOfMonth,
 			Score: 0,
 			Percent: 0,
+			InComplete: 0,
+			Complete: 0,
 			LockTime: 0,
 			DayOfYear: time.Date(year, time.Month(month), dayOfMonth, 0, 0, 0, 0, time.UTC).YearDay(),
 		}
@@ -52,6 +54,8 @@ func (s *Service) getRecordMetaList(userPK string, year int, month int, day int)
 			meta.Percent = rec.Percent
 			meta.LockTime = rec.LockTime
 			meta.DayOfYear = t.YearDay()
+			meta.InComplete = rec.InComplete
+			meta.Complete = rec.Complete
 			if recIndex < recMaxIndex {
 				recIndex++
 			}
