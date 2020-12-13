@@ -1,55 +1,66 @@
 # STMT Core backend
 
-[English](./README_en.md)
+[한국어](./README.md)
 
-STMT 애플리케이션을 위한 서버리스 Golang 코어 서버입니다.
+Golang serverless backend for STMT Application
+
+## Requirements
+
+- [ ] Build script & Makefile
+- [ ] Serverless framework setup
  
 ## API
 
-### AUTH (AUTH API에서만 인증 토큰이 필요하지 않습니다.)
-- [x] 구글 인증으로 회원가입, 로그인하기
+### AUTH (Authentication is not required only in this part)
+- [x] Signup & Signin with google login
 
 ### USER
-- [x] 로그인 한 유저 MyPage 가져오기
-- [ ] 계정 삭제하기
-- [x] 알람 설정 업데이트하기
-- [x] 공개 설정 가져오기
-- [ ] 공개 설정 업데이트
+- [x] Get user info by uuid (My page, Get user)
+- [ ] Remove login user account
+- [x] Update alarm setting
+- [x] Get openness setting
+- [ ] Update openness setting
 
 ### SOCIAL
-- [x] 이메일로 유저 검색
-- [x] 유저 이메일로 팔로우하기
-- [x] 유저 이메일로 언팔로우하기
-- [ ] 팔로우 하는 유저들 랭킹 보기
-- [x] 모든 공개 계정의 랭킹 확인하기
-- [ ] 팔로우 하는 유저의 대시보드 데이터 가져오기
-- [ ] 공개된 계정의 대시보드 데이터 가져오기
+- [x] Search user by email
+- [x] Follow user by user email
+- [x] Unfollow user by user email
+- [ ] Following user ranking
+- [x] All opened user ranking
+- [ ] Get following user's dashboard data
+- [ ] Get opened user's dashboard data
 
 ### TASK
-- [x] 유저의 현재 태스크 리스트 잠금 (서버에 저장)
-- [x] 유저의 현재 태스크 리스트 가져오기
-- [x] 유저의 현재 태스크를 비우고, 레코드를 만들기
-- [x] 현재 태스크의 진행도 업데이트하기
+- [x] Lock user's current task list (create current task list)
+- [x] Get user's current task list (get locked task list)
+- [x] Clear user's current task & create a record (when the current task list lock time passes)
+- [ ] Update progress of current tasks (ex. Check the task complete)
 
-### RECORD
-- [x] 로그인한 유저의 대시보드 데이터 가져오기
-- [x] 로그인한 유저의 대시보드 자세한 기록 가져오기
+### Record
+- [x] Get login user's dashboard data
+- [x] Get login user's detail of dashboard record
 - [ ] Get other user's a week's amount of record by specific date and user email (only if the user has given permission)
+
+### NUGU
+- [ ] Register NUGU device
+- [ ] Get ongoing task
+- [ ] Complete current task
 
 ## AWS DynamoDB Core Table
 
-AWS에서 권장한 [한 테이블에 설계하는 방법](https://changhoi.github.io/posts/backend/dynamodb-single-table-design/)을 따랐습니다.
-
-### Secondary Indexes
+### Additional Indexes
 - PK SK Inverted GSI 
 - AppID, SK GSI (H: SK, SK: AppID)
  
-### 테이블 스키마
+### Table schema
+
+all in one table
+
 ---
 #### Profile
 
-|    PK     |      SK       |    AppID     | nickname | profile |
-| :-------: | :-----------: | :----------: | :------: | :-----: |
+|    PK     |      SK       |    AppID     | nickname | profile |       |
+| :-------: | :-----------: | :----------: | :------: | :-----: | :---: |
 | USER#uuid | PROFILE#email | Hashed AppID | Nickname | imgUrl  |
   
 ---
@@ -87,7 +98,7 @@ AWS에서 권장한 [한 테이블에 설계하는 방법](https://changhoi.gith
 
 #### Current Task
 
-유저마다 6개의 row를 갖게 됩니다.
+User get only 6 tasks row
 
 |    PK     |     SK     |                                  todo                                  |    memo    |    where     |   willStart   | estimatedMinutes |  completedAt  |   createdAt   |
 | :-------: | :--------: | :--------------------------------------------------------------------: | :--------: | :----------: | :-----------: | :--------------: | :-----------: | :-----------: |

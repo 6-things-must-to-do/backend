@@ -1,7 +1,6 @@
 package record
 
 import (
-	"fmt"
 	"github.com/6-things-must-to-do/server/internal/shared/database"
 	"github.com/6-things-must-to-do/server/internal/shared/database/schema"
 	transformUtil "github.com/6-things-must-to-do/server/internal/shared/utils/transform"
@@ -33,7 +32,6 @@ func (s *Service) getRecordMetaList(userPK string, year int, month int, day int)
 	recIndex := 0
 	recMaxIndex := len(records) - 1
 	for dayOfMonth := 1; dayOfMonth <= day; dayOfMonth++ {
-		fmt.Println(recIndex)
 		rec := records[recIndex]
 		t := transformUtil.GetTimeFromJSUnixTimestamp(rec.LockTime)
 
